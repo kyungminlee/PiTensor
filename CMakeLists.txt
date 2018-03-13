@@ -5,20 +5,22 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_EXTENSIONS ON)
 
-
 if (WIN32)
     set(PYTHON_EXECUTABLE "C:/Users/kmlee/Miniconda3/envs/py36/python.exe")
 elseif (APPLE)
-    set(PYTHON_EXECUTABLE "/Users/lee.8024/.brew/miniconda3/bin/python")
+    #set(PYTHON_EXECUTABLE "/Users/lee.8024/.brew/miniconda3/bin/python")
 endif ()
 
-#link_directories(itensor/lib)
-#include_directories(pybind11/include itensor/include ${PYTHON_INCLUDE_DIRS})
+link_directories(deps/osx/ITensor/lib)
+include_directories(pybind11/include deps/osx/ITensor/include ${PYTHON_INCLUDE_DIRS})
 
-find_package(PythonInterp 3 REQUIRED)
-find_package(PythonLibs 3 REQUIRED)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/pybind11/tools/")
 
-include_directories(${PYTHON_INCLUDE_DIRS})
+#find_package(PythonInterp 3 REQUIRED)
+#find_package(PythonLibs 3 REQUIRED)
+#find_package(PythonLibsNew 3 REQUIRED)
+
+#include_directories(${PYTHON_INCLUDE_DIRS})
 
 set(SOURCE_FILES
         src/pitensor.cpp
@@ -134,13 +136,18 @@ add_subdirectory(pybind11)
 
 pybind11_add_module(pitensor ${SOURCE_FILES})
 
-target_include_directories(pitensor
-        PUBLIC ${PYTHON_INCLUDE_DIRS})
+#target_include_directories(pitensor PUBLIC ${PYTHON_INCLUDE_DIRS})
 
 if (APPLE)
     find_library(ACCELERATE_LIBRARY Accelerate)
-    target_link_libraries(pitensor
-            PRIVATE itensor ${PYTHON_LIBRARIES} ${ACCELERATE_LIBRARY})
+    #target_link_libraries(pitensor PRIVATE deps/osx/ITensor/lib/libitensor.a ${ACCELERATE_LIBRARY})
+    #target_link_libraries(pitensor PRIVATE ${CMAKE_SOURCE_DIR}/deps/osx/ITensor/lib/libitensor.a PRIVATE ${ACCELERATE_LIBRARY})
+    target_link_libraries(pitensor PRIVATE ${CMAKE_SOURCE_DIR}/deps/osx/ITensor/lib/libitensor.a PRIVATE ${ACCELERATE_LIBRARY})
+    #target_link_libraries(pitensor deps/osx/ITensor/lib/libitensor.a)
+    #target_link_libraries(pitensor PRIVATE ${ACCELERATE_LIBRARY})
+    #target_link_libraries(pitensor PRIVATE itensor ${ACCELERATE_LIBRARY})
+    #target_link_libraries(pitensor
+    #        PRIVATE itensor ${PYTHON_LIBRARIES} ${ACCELERATE_LIBRARY})
 elseif(MINGW)
     add_definitions(-DMS_WIN64)
     set(ITENSOR_ROOT "deps/win/ITensor")
