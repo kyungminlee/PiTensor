@@ -11,10 +11,6 @@ elseif (APPLE)
     #set(PYTHON_EXECUTABLE "/Users/lee.8024/.brew/miniconda3/bin/python")
 endif ()
 
-
-#link_directories(deps/osx/ITensor/lib)
-#include_directories(pybind11/include deps/osx/ITensor/include ${PYTHON_INCLUDE_DIRS})
-
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/pybind11/tools/")
 
 set(SOURCE_FILES
@@ -131,8 +127,7 @@ add_subdirectory(pybind11)
 
 pybind11_add_module(pitensor ${SOURCE_FILES})
 
-#target_include_directories(pitensor PUBLIC ${PYTHON_INCLUDE_DIRS})
-target_include_directories(pitensor PUBLIC deps/ITensor)
+target_include_directories(pitensor PUBLIC ${CMAKE_BINARY_DIR}/deps/ITensor)
 
 if (APPLE)
     set(ITENSOR_PLATFORM macos)
@@ -146,32 +141,20 @@ if (APPLE)
             general ${ACCELERATE_LIBRARY})
 elseif(MINGW)
     add_definitions(-DMS_WIN64)
-    set(ITENSOR_PLATFORM openblas)
-    #set(ITENSOR_ROOT "deps-bin/win/ITensor")
     set(OPENBLAS_ROOT "${CMAKE_SOURCE_DIR}/deps-bin/win/OpenBLAS-v0.2.20-Win64-int32")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_hypot=hypot") # workaround for mismatch between pyconfig.h and mingw-gcc
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O2 -Wa,-mbig-obj")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_DEBUG} -Wa,-mbig-obj")
     target_include_directories(pitensor
         PUBLIC
-            #"${ITENSOR_ROOT}/include"
             "${OPENBLAS_ROOT}/include")
-#    find_library(ITENSOR_LIBRARY
-#            NAMES itensor
-#            HINTS "${ITENSOR_ROOT}/lib"
-#            )
-#    find_library(ITENSOR_DEBUG_LIBRARY
-#            NAMES itensor-g
-#            HINTS "${ITENSOR_ROOT}/lib"
-#            )
     find_library(OPENBLAS_LIBRARY
             NAMES openblas
             HINTS "${OPENBLAS_ROOT}/lib"
             )
-
-    set(BLAS_LAPACK_LIBFLAGS "${OPENBLAS_LIBRARY}")
-    #set(BLAS_LAPACK_LIBFLAGS "-lopenblas -L${OPENBLAS_ROOT}/lib")
-    set(BLAS_LAPACK_INCLUDEFLAGS "-I${OPENBLAS_ROOT}/include")
+    set(ITENSOR_PLATFORM openblas)
+    set(ITENSOR_BLAS_LAPACK_LIBFLAGS "${OPENBLAS_LIBRARY}")
+    set(ITENSOR_BLAS_LAPACK_INCLUDEFLAGS "-I${OPENBLAS_ROOT}/include")
 
     target_link_libraries(pitensor
             PRIVATE
@@ -181,13 +164,10 @@ elseif(MINGW)
             general pthread
             general gfortran
             general quadmath
-            #${PYTHON_LIBRARIES}
             )
 elseif(MSVC)
     message(FATAL_ERROR "MSVC not yet supported")
 endif()
-
-#add_subdirectory(deps)
 
 file(WRITE "${CMAKE_BINARY_DIR}/deps/options.mk" "\
 #CCCOM=${CMAKE_CXX_COMPILER} -std=c++11 -fPIC
@@ -219,11 +199,13 @@ LIBGFLAGS=-L$(ITENSOR_LIBDIR) $(ITENSOR_LIBGFLAGS)
 
 include(ExternalProject)
 ExternalProject_Add(ITensor_external
-    SOURCE_DIR "${CMAKE_BINARY_DIR}/deps/ITensor"
-    BINARY_DIR "${CMAKE_BINARY_DIR}/deps/ITensor"
-    INSTALL_DIR "${CMAKE_BINARY_DIR}/deps/ITensor"
+    TMP_DIR      "${CMAKE_BINARY_DIR}/deps/ITensor-tmp"
+    STAMP_DIR    "${CMAKE_BINARY_DIR}/deps/ITensor-stamp"
+    DOWNLOAD_DIR "${CMAKE_BINARY_DIR}/deps"
+    SOURCE_DIR   "${CMAKE_BINARY_DIR}/deps/ITensor"
+    BINARY_DIR   "${CMAKE_BINARY_DIR}/deps/ITensor"
+    INSTALL_DIR  "${CMAKE_BINARY_DIR}/deps/ITensor"
     GIT_REPOSITORY git@github.com:kyungminlee/ITensor.git
-    #GIT_TAG v2.1.1
     GIT_TAG pitensor
     UPDATE_COMMAND ""
     PATCH_COMMAND ""
@@ -234,20 +216,6 @@ ExternalProject_Add(ITensor_external
     BUILD_COMMAND "make"
     INSTALL_COMMAND ""
     WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/deps/ITensor"
-    #BUILD_BYPRODUCTS "${CMAKE_BINARY_DIR}/deps/ITensor/libitensor.a"
     )
 
-
-
-
-
-
 add_dependencies(pitensor ITensor_external)
-
-#set_target_properties(pitensor PROPERTIES PREFIX "")
-#set_target_properties(pitensor PROPERTIES SUFFIX ".so")
-
-#get_cmake_property(_variableNames VARIABLES)
-#foreach (_variableName ${_variableNames})
-#    message(STATUS "${_variableName}=${${_variableName}}")
-#endforeach()
