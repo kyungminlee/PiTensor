@@ -1,0 +1,29 @@
+language: generic
+notifications:
+  email: false
+script:
+  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+  - python3 setup.py build_ext
+after_success:
+  - echo "Success"
+matrix:
+  include:
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+            - python3
+            - python3-pip
+            - liblapack-dev
+            - libopenblas-dev
+      env:
+        - CC=gcc-7 CXX=g++-7
+    - os: osx
+      before_install:
+        - brew update
+        - brew outdated python || brew upgrade python
+      env:
+        - CC=clang CXX=clang++
