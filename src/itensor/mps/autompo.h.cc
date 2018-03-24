@@ -7,7 +7,7 @@ using namespace itensor;
 template <typename Tensor>
 static inline
 void
-init(pybind11::module& module)
+_init(pybind11::module& module)
 {
   using mpo_type = MPOt<Tensor>;
   using mps_type = MPSt<Tensor>;
@@ -104,8 +104,8 @@ auto initAutoMPO(pybind11::module& module)
 
 void pitensor::mps::autompo(pybind11::module& module)
 {
-  init<ITensor>(module);
-  init<IQTensor>(module);
+  _init<ITensor>(module);
+  _init<IQTensor>(module);
   initSiteTerm(module);
   initHTerm(module);
 }
