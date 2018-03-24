@@ -1,5 +1,7 @@
 
-deps/
+deps-bin/
 cmake-build-*/
 .idea
 repo
+build/
+lab/
