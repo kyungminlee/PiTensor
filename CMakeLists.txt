@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.5)
 project(pitensor)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_EXTENSIONS ON)
 
 if (WIN32)
-    set(PYTHON_EXECUTABLE "C:/Users/kmlee/Miniconda3/envs/py36/python.exe")
+    set(PYTHON_EXECUTABLE "C:/Users/kmlee/Anaconda3/python.exe")
 elseif (APPLE)
     #set(PYTHON_EXECUTABLE "/Users/lee.8024/.brew/miniconda3/bin/python")
 endif ()
@@ -134,11 +134,37 @@ if (APPLE)
     set(ITENSOR_BLAS_LAPACK_LIBFLAGS "-framework Accelerate")
     set(ITENSOR_BLAS_LAPACK_INCLUDEFLAGS "")
     find_library(ACCELERATE_LIBRARY Accelerate)
+    set(ITENSOR_LIB_OPTIMIZED ${CMAKE_BINARY_DIR}/deps/ITensor/lib/libitensor.a)
+    set(ITENSOR_LIB_DEBUG ${CMAKE_BINARY_DIR}/deps/ITensor/lib/libitensor-g.a)
     target_link_libraries(pitensor 
         PRIVATE 
-            optimized ${CMAKE_BINARY_DIR}/deps/ITensor/lib/libitensor.a 
-            debug ${CMAKE_BINARY_DIR}/deps/ITensor/lib/libitensor-g.a
+            optimized ${ITENSOR_LIB_OPTIMIZED}
+            debug ${ITENSOR_LIB_DEBUG}
             general ${ACCELERATE_LIBRARY})
+elseif(UNIX)
+    set(BLAS_LAPACK_ROOT "/usr")
+    target_include_directories(pitensor PUBLIC "${BLAS_LAPACK_ROOT}/include")
+    find_library(LAPACK_LIBRARY NAMES lapack HINTS "${BLAS_LAPACK_ROOT}/lib")
+    find_library(BLAS_LIBRARY NAMES blas HINTS "${BLAS_LAPACK_ROOT}/lib")
+
+    set(ITENSOR_PLATFORM lapack)
+    set(ITENSOR_BLAS_LAPACK_LIBFLAGS "${LAPACK_LIBRARY} ${BLAS_LIBRARY} -lpthread")
+    set(ITENSOR_BLAS_LAPACK_INCLUDEFLAGS "-I${BLAS_LAPACK_ROOT}/include")
+    set(ITENSOR_LIB_OPTIMIZED ${CMAKE_BINARY_DIR}/deps/ITensor/lib/libitensor.a)
+    set(ITENSOR_LIB_DEBUG ${CMAKE_BINARY_DIR}/deps/ITensor/lib/libitensor-g.a)
+    target_link_libraries(pitensor
+        PRIVATE
+            optimized ${ITENSOR_LIB_OPTIMIZED}
+            debug ${ITENSOR_LIB_DEBUG}
+    )
+    target_link_libraries(pitensor
+        PRIVATE
+            general ${LAPACK_LIBRARY}
+            general ${BLAS_LIBRARY}
+            general pthread
+    )
+    set(CMAKE_AR "gcc-ar")
+    set(CMAKE_RANLIB "gcc-ranlib")
 elseif(MINGW)
     add_definitions(-DMS_WIN64)
     set(OPENBLAS_ROOT "${CMAKE_SOURCE_DIR}/deps-bin/win/OpenBLAS-v0.2.20-Win64-int32")
@@ -167,11 +193,17 @@ elseif(MINGW)
             )
 elseif(MSVC)
     message(FATAL_ERROR "MSVC not yet supported")
+else()
+    message(FATAL_ERROR "Platform not yet supported")
 endif()
 
+string(REPLACE ";" " " LTO_FLAGS "${PYBIND11_LTO_CXX_FLAGS}")
+
 file(WRITE "${CMAKE_BINARY_DIR}/deps/options.mk" "\
-#CCCOM=${CMAKE_CXX_COMPILER} -std=c++11 -fPIC
-CCCOM=c++ -std=c++11 -fPIC
+CCCOM=${CMAKE_CXX_COMPILER} ${CMAKE_CXX14_EXTENSION_COMPILE_OPTION} ${LTO_FLAGS} ${CMAKE_CXX_COMPILE_OPTIONS_PIC}
+AR=${CMAKE_AR}
+RANLIB=${CMAKE_RANLIB}
+
 PLATFORM=${ITENSOR_PLATFORM}
 BLAS_LAPACK_LIBFLAGS=${ITENSOR_BLAS_LAPACK_LIBFLAGS}
 BLAS_LAPACK_INCLUDEFLAGS=${ITENSOR_BLAS_LAPACK_INCLUDEFLAGS}
@@ -205,15 +237,14 @@ ExternalProject_Add(ITensor_external
     SOURCE_DIR   "${CMAKE_BINARY_DIR}/deps/ITensor"
     BINARY_DIR   "${CMAKE_BINARY_DIR}/deps/ITensor"
     INSTALL_DIR  "${CMAKE_BINARY_DIR}/deps/ITensor"
-    GIT_REPOSITORY git@github.com:kyungminlee/ITensor.git
+    GIT_REPOSITORY https://github.com/kyungminlee/ITensor.git
     GIT_TAG pitensor
     UPDATE_COMMAND ""
     PATCH_COMMAND ""
     CONFIGURE_COMMAND ${CMAKE_COMMAND} -E copy 
         "${CMAKE_BINARY_DIR}/deps/options.mk"
         "${CMAKE_BINARY_DIR}/deps/ITensor/options.mk"
-        
-    BUILD_COMMAND "make"
+    BUILD_COMMAND "make" "-j"
     INSTALL_COMMAND ""
     WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/deps/ITensor"
     )
