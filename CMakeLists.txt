@@ -142,6 +142,9 @@ if (APPLE)
             debug ${ITENSOR_LIB_DEBUG}
             general ${ACCELERATE_LIBRARY})
 elseif(UNIX)
+    set(CMAKE_AR "gcc-ar")
+    set(CMAKE_RANLIB "gcc-ranlib")
+
     set(BLAS_LAPACK_ROOT "/usr")
     target_include_directories(pitensor PUBLIC "${BLAS_LAPACK_ROOT}/include")
     find_library(LAPACK_LIBRARY NAMES lapack HINTS "${BLAS_LAPACK_ROOT}/lib")
@@ -163,19 +166,27 @@ elseif(UNIX)
             general ${BLAS_LIBRARY}
             general pthread
     )
+elseif(MINGW)
     set(CMAKE_AR "gcc-ar")
     set(CMAKE_RANLIB "gcc-ranlib")
-elseif(MINGW)
+
     add_definitions(-DMS_WIN64)
-    set(OPENBLAS_ROOT "${CMAKE_SOURCE_DIR}/deps-bin/win/OpenBLAS-v0.2.20-Win64-int32")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_hypot=hypot") # workaround for mismatch between pyconfig.h and mingw-gcc
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O2 -Wa,-mbig-obj")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_DEBUG} -Wa,-mbig-obj")
+
+    file(DOWNLOAD https://downloads.sourceforge.net/project/openblas/v0.2.19/OpenBLAS-v0.2.19-Win64-int32.zip "${CMAKE_SOURCE_DIR}/deps-bin/win/OpenBLAS-v0.2.19-Win64-int32.zip")
+    execute_process(
+        COMMAND unzip -o OpenBLAS-v0.2.19-Win64-int32.zip
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/deps-bin/win"
+    )
+
+    set(OPENBLAS_ROOT "${CMAKE_SOURCE_DIR}/deps-bin/win/OpenBLAS-v0.2.19-Win64-int32")
     target_include_directories(pitensor
         PUBLIC
             "${OPENBLAS_ROOT}/include")
     find_library(OPENBLAS_LIBRARY
-            NAMES openblas
+            NAMES libopenblas.a
             HINTS "${OPENBLAS_ROOT}/lib"
             )
     set(ITENSOR_PLATFORM openblas)
@@ -183,14 +194,17 @@ elseif(MINGW)
     set(ITENSOR_BLAS_LAPACK_INCLUDEFLAGS "-I${OPENBLAS_ROOT}/include")
 
     target_link_libraries(pitensor
-            PRIVATE
+        PRIVATE
             optimized ${CMAKE_BINARY_DIR}/deps/ITensor/lib/libitensor.a 
             debug ${CMAKE_BINARY_DIR}/deps/ITensor/lib/libitensor-g.a
+    )
+    target_link_libraries(pitensor
+        PRIVATE
             general ${OPENBLAS_LIBRARY}
             general pthread
             general gfortran
             general quadmath
-            )
+    )
 elseif(MSVC)
     message(FATAL_ERROR "MSVC not yet supported")
 else()
