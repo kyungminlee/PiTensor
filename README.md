@@ -1,5 +1,7 @@
 ## pitensor: a Python wrapper for ITensor
 
+[![Build Status][travis-img]][travis-url]
+
 ### Introduction
 
 ### Installation
@@ -22,3 +24,7 @@ print(foo)
 ### Contributing
 
 Contributions are welcome
+
+
+[travis-img]: https://travis-ci.org/kyungminlee/PiTensor.svg?branch=master
+[travis-url]: https://travis-ci.org/kyungminlee/PiTensor
