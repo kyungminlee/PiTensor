@@ -58,7 +58,7 @@ class CMakeBuild(build_ext):
 
 setup(
     name='pitensor',
-    version='0.0.1',
+    version='0.1',
     author='Kyungmin Lee',
     author_email='kyungmin.lee.42@gmail.com',
     description='PiTensor',
