@@ -1,3 +1,9 @@
+#
+# set PYTHON_EXECUTABLE to the python binary (especially on Windows)
+# e.g.
+# cmake .. -G "MSYS Makefiles" -DPYTHON_EXECUTABLE=C:/Users/user/Anaconda3/python.exe
+#
+
 cmake_minimum_required(VERSION 3.5)
 project(pitensor)
 
@@ -5,11 +11,10 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_EXTENSIONS ON)
 
-if (WIN32)
-    set(PYTHON_EXECUTABLE "C:/Users/kmlee/Anaconda3/python.exe")
-elseif (APPLE)
-    #set(PYTHON_EXECUTABLE "/Users/lee.8024/.brew/miniconda3/bin/python")
-endif ()
+if(MINGW)
+    set(PYBIND11_LTO_CXX_FLAGS "")
+endif()
+
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/pybind11/tools/")
 
@@ -176,30 +181,16 @@ elseif(MINGW)
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_RELEASE}")
 
-    set(OPENBLAS_VERSION "v0.2.19")
-    set(OPENBLAS_SUFFIX "${OPENBLAS_VERSION}-Win64-int32")
-    set(OPENBLAS_ROOT "${CMAKE_SOURCE_DIR}/deps-bin/win/OpenBLAS-${OPENBLAS_SUFFIX}")
-    if (NOT EXISTS "${OPENBLAS_ROOT}")
-        if (NOT EXISTS "${CMAKE_SOURCE_DIR}/deps-bin/win/OpenBLAS-${OPENBLAS_SUFFIX}.zip")
-            file(DOWNLOAD
-                    "https://downloads.sourceforge.net/project/openblas/${OPENBLAS_VERSION}/OpenBLAS-${OPENBLAS_SUFFIX}.zip"
-                    "${CMAKE_SOURCE_DIR}/deps-bin/win/OpenBLAS-${OPENBLAS_SUFFIX}.zip"
-            )
-        endif()
-        execute_process(
-            COMMAND unzip -o "OpenBLAS-${OPENBLAS_SUFFIX}.zip"
-            WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/deps-bin/win"
-        )
-    endif()
+    set(OPENBLAS_ROOT "/mingw64")
 
-    target_include_directories(pitensor PUBLIC "${OPENBLAS_ROOT}/include")
+    target_include_directories(pitensor PUBLIC "${OPENBLAS_ROOT}/include/OpenBLAS")
     find_library(OPENBLAS_LIBRARY
         NAMES openblas
         HINTS "${OPENBLAS_ROOT}/lib"
     )
     set(ITENSOR_PLATFORM openblas)
     set(ITENSOR_BLAS_LAPACK_LIBFLAGS "${OPENBLAS_LIBRARY}")
-    set(ITENSOR_BLAS_LAPACK_INCLUDEFLAGS "-I${OPENBLAS_ROOT}/include")
+    set(ITENSOR_BLAS_LAPACK_INCLUDEFLAGS "-I${OPENBLAS_ROOT}/include/OpenBLAS")
 
     target_link_libraries(pitensor
         PRIVATE
