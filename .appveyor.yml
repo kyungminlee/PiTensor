@@ -19,6 +19,6 @@ build_script:
   - bash -lc "cd $APPVEYOR_BUILD_FOLDER/build; cmake .. -G \"MSYS Makefiles\" -DPYTHON_EXECUTABLE=C:/Python36-x64/python.exe"
   - bash -lc "cd $APPVEYOR_BUILD_FOLDER/build; make"
 test_script:
-  - cd %APPVEYOR_BUILD_FOLDER%
+  - cd %APPVEYOR_BUILD_FOLDER%\build
   - C:\Python36-x64\python.exe -c "import pitensor; i=pitensor.Index('I', 3); print(i)"
   - C:\Python36-x64\python.exe -c "import sys; print(sys.path)"
