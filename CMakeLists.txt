@@ -87,7 +87,7 @@ set(SOURCE_FILES
         src/itensor/mps/TEvolObserver.h.cc
         src/itensor/tensor/algs.h.cc
         src/itensor/tensor/contract.h.cc
-        #src/itensor/tensor/lapack_wrap.h.cc
+#        src/itensor/tensor/lapack_wrap.h.cc
         src/itensor/tensor/mat.h.cc
         src/itensor/tensor/matrange.h.cc
         src/itensor/tensor/permutation.h.cc
@@ -109,7 +109,7 @@ set(SOURCE_FILES
         src/itensor/util/infarray.h.cc
         src/itensor/util/input.h.cc
         src/itensor/util/multalloc.h.cc
-        #src/util/parallel.h.cc
+#        src/util/parallel.h.cc
         src/itensor/util/print.h.cc
         src/itensor/util/range.h.cc
         src/itensor/util/readwrite.h.cc
@@ -129,7 +129,7 @@ pybind11_add_module(pitensor ${SOURCE_FILES})
 
 target_include_directories(pitensor PUBLIC ${CMAKE_BINARY_DIR}/deps/ITensor)
 
-if (APPLE)
+if(APPLE)
     set(ITENSOR_PLATFORM macos)
     set(ITENSOR_BLAS_LAPACK_LIBFLAGS "-framework Accelerate")
     set(ITENSOR_BLAS_LAPACK_INCLUDEFLAGS "")
@@ -140,7 +140,8 @@ if (APPLE)
         PRIVATE 
             optimized ${ITENSOR_LIB_OPTIMIZED}
             debug ${ITENSOR_LIB_DEBUG}
-            general ${ACCELERATE_LIBRARY})
+            general ${ACCELERATE_LIBRARY}
+    )
 elseif(UNIX)
     set(CMAKE_AR "gcc-ar")
     set(CMAKE_RANLIB "gcc-ranlib")
@@ -171,36 +172,44 @@ elseif(MINGW)
     set(CMAKE_RANLIB "gcc-ranlib")
 
     add_definitions(-DMS_WIN64)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_hypot=hypot") # workaround for mismatch between pyconfig.h and mingw-gcc
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O2 -Wa,-mbig-obj")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_DEBUG} -Wa,-mbig-obj")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_hypot=hypot -O2 -Wa,-mbig-obj") # workaround for mismatch between pyconfig.h and mingw-gcc
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_RELEASE}")
 
-    file(DOWNLOAD https://downloads.sourceforge.net/project/openblas/v0.2.19/OpenBLAS-v0.2.19-Win64-int32.zip "${CMAKE_SOURCE_DIR}/deps-bin/win/OpenBLAS-v0.2.19-Win64-int32.zip")
-    execute_process(
-        COMMAND unzip -o OpenBLAS-v0.2.19-Win64-int32.zip
-        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/deps-bin/win"
-    )
-
-    set(OPENBLAS_ROOT "${CMAKE_SOURCE_DIR}/deps-bin/win/OpenBLAS-v0.2.19-Win64-int32")
-    target_include_directories(pitensor
-        PUBLIC
-            "${OPENBLAS_ROOT}/include")
-    find_library(OPENBLAS_LIBRARY
-            NAMES libopenblas.a
-            HINTS "${OPENBLAS_ROOT}/lib"
+    set(OPENBLAS_VERSION "v0.2.19")
+    set(OPENBLAS_SUFFIX "${OPENBLAS_VERSION}-Win64-int32")
+    set(OPENBLAS_ROOT "${CMAKE_SOURCE_DIR}/deps-bin/win/OpenBLAS-${OPENBLAS_SUFFIX}")
+    if (NOT EXISTS "${OPENBLAS_ROOT}")
+        if (NOT EXISTS "${CMAKE_SOURCE_DIR}/deps-bin/win/OpenBLAS-${OPENBLAS_SUFFIX}.zip")
+            file(DOWNLOAD
+                    "https://downloads.sourceforge.net/project/openblas/${OPENBLAS_VERSION}/OpenBLAS-${OPENBLAS_SUFFIX}.zip"
+                    "${CMAKE_SOURCE_DIR}/deps-bin/win/OpenBLAS-${OPENBLAS_SUFFIX}.zip"
             )
+        endif()
+        execute_process(
+            COMMAND unzip -o "OpenBLAS-${OPENBLAS_SUFFIX}.zip"
+            WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/deps-bin/win"
+        )
+    endif()
+
+    target_include_directories(pitensor PUBLIC "${OPENBLAS_ROOT}/include")
+    find_library(OPENBLAS_LIBRARY
+        NAMES openblas
+        HINTS "${OPENBLAS_ROOT}/lib"
+    )
     set(ITENSOR_PLATFORM openblas)
     set(ITENSOR_BLAS_LAPACK_LIBFLAGS "${OPENBLAS_LIBRARY}")
     set(ITENSOR_BLAS_LAPACK_INCLUDEFLAGS "-I${OPENBLAS_ROOT}/include")
 
     target_link_libraries(pitensor
         PRIVATE
-            optimized ${CMAKE_BINARY_DIR}/deps/ITensor/lib/libitensor.a 
-            debug ${CMAKE_BINARY_DIR}/deps/ITensor/lib/libitensor-g.a
+            optimized "${CMAKE_BINARY_DIR}/deps/ITensor/lib/libitensor.a"
+            debug "${CMAKE_BINARY_DIR}/deps/ITensor/lib/libitensor-g.a"
     )
     target_link_libraries(pitensor
         PRIVATE
-            general ${OPENBLAS_LIBRARY}
+            general "-static-libgcc -static-libstdc++ -Wl,-Bstatic" # statically link all libraries (without needing DLLs)
+            general "${OPENBLAS_LIBRARY}"
             general pthread
             general gfortran
             general quadmath
@@ -208,7 +217,7 @@ elseif(MINGW)
 elseif(MSVC)
     message(FATAL_ERROR "MSVC not yet supported")
 else()
-    message(FATAL_ERROR "Platform not yet supported")
+    message(FATAL_ERROR "Unsupported platform")
 endif()
 
 string(REPLACE ";" " " LTO_FLAGS "${PYBIND11_LTO_CXX_FLAGS}")
@@ -221,8 +230,8 @@ RANLIB=${CMAKE_RANLIB}
 PLATFORM=${ITENSOR_PLATFORM}
 BLAS_LAPACK_LIBFLAGS=${ITENSOR_BLAS_LAPACK_LIBFLAGS}
 BLAS_LAPACK_INCLUDEFLAGS=${ITENSOR_BLAS_LAPACK_INCLUDEFLAGS}
-OPTIMIZATIONS=-O2 -DNDEBUG -Wall
-DEBUGFLAGS=-DDEBUG -g -Wall -pedantic
+OPTIMIZATIONS=-DNDEBUG -Wall ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}
+DEBUGFLAGS=-DDEBUG -Wall -pedantic ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG}
 ITENSOR_MAKE_DYLIB=0
 PREFIX=$(THIS_DIR)
 ITENSOR_LIBDIR=$(PREFIX)/lib
@@ -258,9 +267,9 @@ ExternalProject_Add(ITensor_external
     CONFIGURE_COMMAND ${CMAKE_COMMAND} -E copy 
         "${CMAKE_BINARY_DIR}/deps/options.mk"
         "${CMAKE_BINARY_DIR}/deps/ITensor/options.mk"
-    BUILD_COMMAND "make" "-j"
+    BUILD_COMMAND "make"
     INSTALL_COMMAND ""
     WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/deps/ITensor"
-    )
+)
 
 add_dependencies(pitensor ITensor_external)
