@@ -1,7 +1,6 @@
 import unittest
 import pitensor
 
-
 class PiTensorTest_ITensor(unittest.TestCase):
     def test(self):
         self.testIndex()
@@ -19,4 +18,6 @@ class PiTensorTest_ITensor(unittest.TestCase):
         S = pitensor.ITensor()
         V = pitensor.ITensor()
         foo = pitensor.svd(T, U, S, V)
-        print(foo)
+
+if __name__=='__main__':
+    unittest.main()
