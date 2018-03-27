@@ -25,5 +25,6 @@ matrix:
       before_install:
         - brew update
         - brew outdated python || brew upgrade python
+        - python -m pip install --upgrade pip setuptools
       env:
         - CC=clang CXX=clang++
