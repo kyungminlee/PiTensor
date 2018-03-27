@@ -147,6 +147,48 @@ if(APPLE)
             debug ${ITENSOR_LIB_DEBUG}
             general ${ACCELERATE_LIBRARY}
     )
+elseif(MSYS AND MINGW)
+    set(CMAKE_AR "gcc-ar")
+    set(CMAKE_RANLIB "gcc-ranlib")
+
+    # workaround for
+    # 1. mismatch between pyconfig.h and mingw-gcc (hypot)
+    # 2. bigobj issue in MinGW
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_hypot=hypot -O2 -Wa,-mbig-obj") 
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_RELEASE}")
+
+    if (NOT DEFINED OPENBLAS_ROOT)
+        if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+            set(OPENBLAS_ROOT "/mingw64")
+        else()
+            set(OPENBLAS_ROOT "/mingw32")
+        endif()
+    endif()
+
+    target_include_directories(pitensor PUBLIC "${OPENBLAS_ROOT}/include/OpenBLAS")
+    find_library(OPENBLAS_LIBRARY
+        NAMES openblas
+        HINTS "${OPENBLAS_ROOT}/lib"
+    )
+    set(ITENSOR_PLATFORM openblas)
+    set(ITENSOR_BLAS_LAPACK_LIBFLAGS "${OPENBLAS_LIBRARY}")
+    set(ITENSOR_BLAS_LAPACK_INCLUDEFLAGS "-I${OPENBLAS_ROOT}/include/OpenBLAS")
+
+    target_link_libraries(pitensor
+        PRIVATE
+            optimized "${CMAKE_BINARY_DIR}/deps/ITensor/lib/libitensor.a"
+            debug "${CMAKE_BINARY_DIR}/deps/ITensor/lib/libitensor-g.a"
+    )
+    target_link_libraries(pitensor
+        PRIVATE
+            # TODO(kyungminlee): dynamically link libraries and include DLL files in setup.py
+            general "-static -static-libgcc -static-libstdc++" # statically link all libraries (without needing DLLs)
+            general "-Wl,-Bstatic"
+            general "${OPENBLAS_LIBRARY}"
+            general gfortran
+            general quadmath
+    )
 elseif(UNIX)
     set(CMAKE_AR "gcc-ar")
     set(CMAKE_RANLIB "gcc-ranlib")
@@ -171,39 +213,6 @@ elseif(UNIX)
             general ${LAPACK_LIBRARY}
             general ${BLAS_LIBRARY}
             general pthread
-    )
-elseif(MINGW)
-    set(CMAKE_AR "gcc-ar")
-    set(CMAKE_RANLIB "gcc-ranlib")
-
-    add_definitions(-DMS_WIN64)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_hypot=hypot -O2 -Wa,-mbig-obj") # workaround for mismatch between pyconfig.h and mingw-gcc
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_RELEASE}")
-
-    set(OPENBLAS_ROOT "/mingw64")
-
-    target_include_directories(pitensor PUBLIC "${OPENBLAS_ROOT}/include/OpenBLAS")
-    find_library(OPENBLAS_LIBRARY
-        NAMES openblas
-        HINTS "${OPENBLAS_ROOT}/lib"
-    )
-    set(ITENSOR_PLATFORM openblas)
-    set(ITENSOR_BLAS_LAPACK_LIBFLAGS "${OPENBLAS_LIBRARY}")
-    set(ITENSOR_BLAS_LAPACK_INCLUDEFLAGS "-I${OPENBLAS_ROOT}/include/OpenBLAS")
-
-    target_link_libraries(pitensor
-        PRIVATE
-            optimized "${CMAKE_BINARY_DIR}/deps/ITensor/lib/libitensor.a"
-            debug "${CMAKE_BINARY_DIR}/deps/ITensor/lib/libitensor-g.a"
-    )
-    target_link_libraries(pitensor
-        PRIVATE
-            general "-static-libgcc -static-libstdc++ -Wl,-Bstatic" # statically link all libraries (without needing DLLs)
-            general "${OPENBLAS_LIBRARY}"
-            general pthread
-            general gfortran
-            general quadmath
     )
 elseif(MSVC)
     message(FATAL_ERROR "MSVC not yet supported")
