@@ -8,12 +8,15 @@ from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
 
+try:
+    from wheel.bdist_wheel import bdist_wheel
+except ImportError:
+    bdist_wheel = None
 
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
         Extension.__init__(self, name, sources=[])
         self.sourcedir = os.path.abspath(sourcedir)
-
 
 class CMakeBuild(build_ext):
     def run(self):
@@ -42,9 +45,6 @@ class CMakeBuild(build_ext):
         if platform.system() == "Windows":
             cmake_args += ['-G', 'MSYS Makefiles']
             cmake_args += ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{}={}'.format(cfg.upper(), extdir)]
-            #if sys.maxsize > 2**32:
-            #    cmake_args += ['-A', 'x64']
-            #build_args += ['--', '/m']
         else:
             cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
             build_args += ['--', '-j2']
@@ -57,15 +57,20 @@ class CMakeBuild(build_ext):
         subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
+cmdclass = dict()
+cmdclass['built_ext'] = CMakeBuild
+if bdist_wheel:
+    cmdclass['bdist_wheel'] = bdist_wheel
+
 setup(
     name='pitensor',
     version='0.1',
     author='Kyungmin Lee',
     author_email='kyungmin.lee.42@gmail.com',
     description='PiTensor',
-    long_description='',
+    long_description='Python wrapper for ITensor',
     ext_modules=[CMakeExtension('pitensor')],
-    cmdclass=dict(build_ext=CMakeBuild),
+    cmdclass=cmdclass,
     zip_safe=False,
 )
 
