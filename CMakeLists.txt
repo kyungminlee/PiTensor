@@ -138,6 +138,7 @@ set(PITENSOR_DEPENDENCY_DIR "${CMAKE_BINARY_DIR}/deps/${CMAKE_CXX_PLATFORM_ID}-$
 target_include_directories(pitensor PUBLIC ${PITENSOR_DEPENDENCY_DIR}/ITensor)
 
 if(APPLE)
+    # https://stackoverflow.com/questions/26185978/macos-wchar-h-file-not-found
     set(ITENSOR_PLATFORM macos)
     set(ITENSOR_BLAS_LAPACK_LIBFLAGS "-framework Accelerate")
     set(ITENSOR_BLAS_LAPACK_INCLUDEFLAGS "")
