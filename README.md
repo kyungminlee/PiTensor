@@ -1,6 +1,7 @@
 ## PiTensor: a Python wrapper for ITensor
 
 [![Build Status][travis-img]][travis-url]
+[![Build Status][appveyor-img]][appveyor-url]
 
 ### Introduction
 
@@ -57,3 +58,5 @@ All contributions are welcome
 
 [travis-img]: https://travis-ci.org/kyungminlee/PiTensor.svg?branch=master
 [travis-url]: https://travis-ci.org/kyungminlee/PiTensor
+[appveyor-img]: https://ci.appveyor.com/api/projects/status/vk3fn99d4kql9a2g?svg=true
+[appveyor-url]: https://ci.appveyor.com/project/kyungminlee/PiTensor
