@@ -132,15 +132,18 @@ add_subdirectory(pybind11)
 
 pybind11_add_module(pitensor ${SOURCE_FILES})
 
-target_include_directories(pitensor PUBLIC ${CMAKE_BINARY_DIR}/deps/ITensor)
+math(EXPR PTR_SIZE "8*${CMAKE_CXX_SIZEOF_DATA_PTR}")
+set(PITENSOR_DEPENDENCY_DIR "${CMAKE_BINARY_DIR}/deps/${CMAKE_CXX_PLATFORM_ID}-${PTR_SIZE}")
+
+target_include_directories(pitensor PUBLIC ${PITENSOR_DEPENDENCY_DIR}/ITensor)
 
 if(APPLE)
     set(ITENSOR_PLATFORM macos)
     set(ITENSOR_BLAS_LAPACK_LIBFLAGS "-framework Accelerate")
     set(ITENSOR_BLAS_LAPACK_INCLUDEFLAGS "")
     find_library(ACCELERATE_LIBRARY Accelerate)
-    set(ITENSOR_LIB_OPTIMIZED ${CMAKE_BINARY_DIR}/deps/ITensor/lib/libitensor.a)
-    set(ITENSOR_LIB_DEBUG ${CMAKE_BINARY_DIR}/deps/ITensor/lib/libitensor-g.a)
+    set(ITENSOR_LIB_OPTIMIZED ${PITENSOR_DEPENDENCY_DIR}/ITensor/lib/libitensor.a)
+    set(ITENSOR_LIB_DEBUG ${PITENSOR_DEPENDENCY_DIR}/ITensor/lib/libitensor-g.a)
     target_link_libraries(pitensor 
         PRIVATE 
             optimized ${ITENSOR_LIB_OPTIMIZED}
@@ -178,8 +181,8 @@ elseif(MSYS AND MINGW)
 
     target_link_libraries(pitensor
         PRIVATE
-            optimized "${CMAKE_BINARY_DIR}/deps/ITensor/lib/libitensor.a"
-            debug "${CMAKE_BINARY_DIR}/deps/ITensor/lib/libitensor-g.a"
+            optimized "${PITENSOR_DEPENDENCY_DIR}/ITensor/lib/libitensor.a"
+            debug "${PITENSOR_DEPENDENCY_DIR}/ITensor/lib/libitensor-g.a"
     )
     target_link_libraries(pitensor
         PRIVATE
@@ -202,8 +205,8 @@ elseif(UNIX)
     set(ITENSOR_PLATFORM lapack)
     set(ITENSOR_BLAS_LAPACK_LIBFLAGS "${LAPACK_LIBRARY} ${BLAS_LIBRARY} -lpthread")
     set(ITENSOR_BLAS_LAPACK_INCLUDEFLAGS "-I${BLAS_LAPACK_ROOT}/include")
-    set(ITENSOR_LIB_OPTIMIZED ${CMAKE_BINARY_DIR}/deps/ITensor/lib/libitensor.a)
-    set(ITENSOR_LIB_DEBUG ${CMAKE_BINARY_DIR}/deps/ITensor/lib/libitensor-g.a)
+    set(ITENSOR_LIB_OPTIMIZED ${PITENSOR_DEPENDENCY_DIR}/ITensor/lib/libitensor.a)
+    set(ITENSOR_LIB_DEBUG ${PITENSOR_DEPENDENCY_DIR}/ITensor/lib/libitensor-g.a)
     target_link_libraries(pitensor
         PRIVATE
             optimized ${ITENSOR_LIB_OPTIMIZED}
@@ -222,9 +225,6 @@ else()
 endif()
 
 string(REPLACE ";" " " LTO_FLAGS "${PYBIND11_LTO_CXX_FLAGS}")
-
-math(EXPR PTR_SIZE "8*${CMAKE_CXX_SIZEOF_DATA_PTR}")
-set(PITENSOR_DEPENDENCY_DIR "${CMAKE_BINARY_DIR}/deps/${CMAKE_CXX_PLATFORM_ID}-${PTR_SIZE}")
 
 file(WRITE "${PITENSOR_DEPENDENCY_DIR}/options.mk" "\
 CCCOM=${CMAKE_CXX_COMPILER} ${CMAKE_CXX14_EXTENSION_COMPILE_OPTION} ${LTO_FLAGS} ${CMAKE_CXX_COMPILE_OPTIONS_PIC}
