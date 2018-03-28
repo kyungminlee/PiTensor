@@ -11,23 +11,28 @@ after_success:
 matrix:
   include:
     - os: linux
-      python: "3.3"
-      env:
-        - CC=gcc-7 CXX=g++-7
-    - os: linux
-      python: "3.4"
-      env:
-        - CC=gcc-7 CXX=g++-7
-    - os: linux
-      python: "3.5"
-      env:
-        - CC=gcc-7 CXX=g++-7
-    - os: linux
-      python: "3.6"
+      python:
+        - "3.3"
+        - "3.4"
+        - "3.5"
+        - "3.5-dev"
+        - "3.6"
+        - "3.6-dev"
+        - "3.7-dev"
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+            - liblapack-dev
+            - libopenblas-dev
       env:
         - CC=gcc-7 CXX=g++-7
     - os: osx
+      before_install:
+        - brew update
+        - brew outdated python || brew upgrade python
+        - python -m pip install --upgrade pip setuptools wheel
       env:
         - CC=clang CXX=clang++
-before_install:
-  - .travis/before_install.sh
