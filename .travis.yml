@@ -48,6 +48,7 @@ matrix:
         - brew install pyenv-virtualenv
         - pyenv install 3.6.4
         - export PYENV_VERSION=3.6.4
+        - eval "$(pyenv virtualenv-init -)"
         - pyenv-virtualenv venv
         - source venv/bin/activate
         - which python
