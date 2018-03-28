@@ -58,5 +58,5 @@ All contributions are welcome
 
 [travis-img]: https://travis-ci.org/kyungminlee/PiTensor.svg?branch=master
 [travis-url]: https://travis-ci.org/kyungminlee/PiTensor
-[appveyor-img]: https://ci.appveyor.com/projects/kyungminlee/PiTensor/branch/master?svg=true
+[appveyor-img]: https://ci.appveyor.com/api/projects/status/vk3fn99d4kql9a2g?svg=true
 [appveyor-url]: https://ci.appveyor.com/project/kyungminlee/PiTensor
