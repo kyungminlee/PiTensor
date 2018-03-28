@@ -50,7 +50,7 @@ matrix:
         - export PYENV_VERSION=3.6.4
         - eval "$(pyenv virtualenv-init -)"
         - pyenv virtualenv venv
-        - source venv/bin/activate
+        - pyenv shell venv
         - which python
         - python --version
         - python -m pip install --upgrade pip setuptools wheel
