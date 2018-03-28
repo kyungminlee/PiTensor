@@ -133,7 +133,7 @@ add_subdirectory(pybind11)
 pybind11_add_module(pitensor ${SOURCE_FILES})
 
 math(EXPR PTR_SIZE "8*${CMAKE_CXX_SIZEOF_DATA_PTR}")
-set(PITENSOR_DEPENDENCY_DIR "${CMAKE_BINARY_DIR}/deps/${CMAKE_CXX_PLATFORM_ID}-${PTR_SIZE}")
+set(PITENSOR_DEPENDENCY_DIR "${CMAKE_BINARY_DIR}/deps/${CMAKE_CXX_PLATFORM_ID}${PTR_SIZE}")
 
 target_include_directories(pitensor PUBLIC ${PITENSOR_DEPENDENCY_DIR}/ITensor)
 
