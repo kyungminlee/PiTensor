@@ -62,13 +62,29 @@ cmdclass['build_ext'] = CMakeBuild
 if bdist_wheel:
     cmdclass['bdist_wheel'] = bdist_wheel
 
+long_description = \
+"""
+The PiTensor package is a Python wrapper for the ITensor package
+(http://itensor.org), a C++ library for implementing tensor network calculations
+"""
+
 setup(
     name='pitensor',
     version='0.1',
+    description='Python wrapper for ITensor',
+    long_description=long_description,
+    classifiers=[
+        'Development Status :: 2 - Alpha',
+        'License :: OSI Approved :: MIT License',
+        'Programming Language :: Python :: 3 :: Only',
+        'Programming Language :: C++',
+        'Topic :: Scientific/Engineering :: Physics',
+    ],
+    keywords='itensor tensornetwork dmrg',
+    url='http://github.com/kyungminlee/PiTensor',
     author='Kyungmin Lee',
     author_email='kyungmin.lee.42@gmail.com',
-    description='PiTensor',
-    long_description='Python wrapper for ITensor',
+    license='MIT',
     ext_modules=[CMakeExtension('pitensor')],
     cmdclass=cmdclass,
     zip_safe=False,
