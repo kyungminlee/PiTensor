@@ -31,7 +31,9 @@ python setup.py install
 
 #### Windows (MSYS2 + MinGW)
 - MSYS2 + MinGW
-- Python 3 (Currently works with Python 3.6 in 64 bit systems)
+- OpenBLAS (`mingw-w64-i686-openblas` or `mingw-w64-x86_64-openblas`)
+- CMake (`mingw-w64-i686-cmake` or `mingw-w64-x86_64-cmake`)
+- Python 3 (for Windows, not for MSYS2)
 
 ### Getting Started
 
