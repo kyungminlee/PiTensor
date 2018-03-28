@@ -4,6 +4,8 @@ notifications:
 script:
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
   - python3 setup.py build_ext
+  - python3 setup.py bdist_wheel
+  - python3 setup.py install
 after_success:
   - echo "Success"
 matrix:
@@ -17,6 +19,7 @@ matrix:
             - g++-7
             - python3
             - python3-pip
+            - python3-wheel
             - liblapack-dev
             - libopenblas-dev
       env:
@@ -25,6 +28,6 @@ matrix:
       before_install:
         - brew update
         - brew outdated python || brew upgrade python
-        - python -m pip install --upgrade pip setuptools
+        - python -m pip install --upgrade pip setuptools wheel
       env:
         - CC=clang CXX=clang++

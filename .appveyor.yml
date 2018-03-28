@@ -58,7 +58,7 @@ environment:
       BIT: 64
       PYTHON_DIR: Python36
 build_script:
-  - C:\%PYTHON_DIR%\python.exe -m pip install --upgrade pip setuptools
+  - C:\%PYTHON_DIR%\python.exe -m pip install --upgrade pip setuptools wheel
   - SET "PATH=C:\%MSYS2_DIR%\%MSYSTEM%\bin;C:\%MSYS2_DIR%\usr\bin;%PATH%"
   - bash -lc "pacman -S --needed --noconfirm pacman-mirrors"
   - bash -lc "pacman -S --needed --noconfirm git"
