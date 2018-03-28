@@ -58,7 +58,7 @@ class CMakeBuild(build_ext):
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
 cmdclass = dict()
-cmdclass['built_ext'] = CMakeBuild
+cmdclass['build_ext'] = CMakeBuild
 if bdist_wheel:
     cmdclass['bdist_wheel'] = bdist_wheel
 
