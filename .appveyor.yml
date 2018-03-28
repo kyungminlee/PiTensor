@@ -72,4 +72,4 @@ build_script:
   - bash -lc "cd $APPVEYOR_BUILD_FOLDER; /c/%PYTHON_DIR%/python.exe setup.py install"
 test_script:
   - cd %APPVEYOR_BUILD_FOLDER%
-  - C:\%PYTHON_DIR%\python.exe tests/test_itensor.py
+  - C:\%PYTHON_DIR%\python.exe tests/test_itensor.py -v
