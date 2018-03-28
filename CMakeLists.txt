@@ -223,7 +223,10 @@ endif()
 
 string(REPLACE ";" " " LTO_FLAGS "${PYBIND11_LTO_CXX_FLAGS}")
 
-file(WRITE "${CMAKE_BINARY_DIR}/deps/options.mk" "\
+math(EXPR PTR_SIZE "8*${CMAKE_CXX_SIZEOF_DATA_PTR}")
+set(PITENSOR_DEPENDENCY_DIR "${CMAKE_BINARY_DIR}/deps/${CMAKE_CXX_PLATFORM_ID}-${PTR_SIZE}")
+
+file(WRITE "${PITENSOR_DEPENDENCY_DIR}/options.mk" "\
 CCCOM=${CMAKE_CXX_COMPILER} ${CMAKE_CXX14_EXTENSION_COMPILE_OPTION} ${LTO_FLAGS} ${CMAKE_CXX_COMPILE_OPTIONS_PIC}
 AR=${CMAKE_AR}
 RANLIB=${CMAKE_RANLIB}
@@ -255,22 +258,22 @@ LIBGFLAGS=-L$(ITENSOR_LIBDIR) $(ITENSOR_LIBGFLAGS)
 
 include(ExternalProject)
 ExternalProject_Add(ITensor_external
-    TMP_DIR      "${CMAKE_BINARY_DIR}/deps/ITensor-tmp"
-    STAMP_DIR    "${CMAKE_BINARY_DIR}/deps/ITensor-stamp"
-    DOWNLOAD_DIR "${CMAKE_BINARY_DIR}/deps"
-    SOURCE_DIR   "${CMAKE_BINARY_DIR}/deps/ITensor"
-    BINARY_DIR   "${CMAKE_BINARY_DIR}/deps/ITensor"
-    INSTALL_DIR  "${CMAKE_BINARY_DIR}/deps/ITensor"
+    TMP_DIR      "${PITENSOR_DEPENDENCY_DIR}/ITensor-tmp"
+    STAMP_DIR    "${PITENSOR_DEPENDENCY_DIR}/ITensor-stamp"
+    DOWNLOAD_DIR "${PITENSOR_DEPENDENCY_DIR}"
+    SOURCE_DIR   "${PITENSOR_DEPENDENCY_DIR}/ITensor"
+    BINARY_DIR   "${PITENSOR_DEPENDENCY_DIR}/ITensor"
+    INSTALL_DIR  "${PITENSOR_DEPENDENCY_DIR}/ITensor"
     GIT_REPOSITORY https://github.com/kyungminlee/ITensor.git
     GIT_TAG pitensor
     UPDATE_COMMAND ""
     PATCH_COMMAND ""
     CONFIGURE_COMMAND ${CMAKE_COMMAND} -E copy 
-        "${CMAKE_BINARY_DIR}/deps/options.mk"
-        "${CMAKE_BINARY_DIR}/deps/ITensor/options.mk"
+        "${PITENSOR_DEPENDENCY_DIR}/options.mk"
+        "${PITENSOR_DEPENDENCY_DIR}/ITensor/options.mk"
     BUILD_COMMAND "make"
     INSTALL_COMMAND ""
-    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/deps/ITensor"
+    WORKING_DIRECTORY "${PITENSOR_DEPENDENCY_DIR}/ITensor"
 )
 
 add_dependencies(pitensor ITensor_external)
