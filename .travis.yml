@@ -6,7 +6,7 @@ script:
   - python setup.py bdist_wheel
   - python setup.py install
 after_success:
-  - echo "Success"
+  - python tests/test_itensor.py
 matrix:
   include:
     - os: linux
