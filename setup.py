@@ -75,6 +75,7 @@ setup(
     long_description=long_description,
     classifiers=[
         'Development Status :: 2 - Alpha',
+        'Intended Audience :: Science/Research',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3 :: Only',
         'Programming Language :: C++',
