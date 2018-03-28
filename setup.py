@@ -70,7 +70,7 @@ The PiTensor package is a Python wrapper for the ITensor package
 
 setup(
     name='pitensor',
-    version='0.2',
+    version='0.2.0.dev1',
     description='Python wrapper for ITensor',
     long_description=long_description,
     classifiers=[
