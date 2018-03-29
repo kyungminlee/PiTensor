@@ -4,6 +4,7 @@
 # cmake .. -G "MSYS Makefiles" -DPYTHON_EXECUTABLE=C:/Users/user/Anaconda3/python.exe
 #
 
+
 cmake_minimum_required(VERSION 3.5)
 project(pitensor)
 
@@ -161,25 +162,24 @@ elseif(MSYS AND MINGW)
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_RELEASE}")
 
-    if (NOT DEFINED OPENBLAS_ROOT)
+    if (NOT DEFINED MINGW_ROOT)
+        set(MINGW_ROOT "$ENV{MINGW_PREFIX}")
         if(CMAKE_CXX_SIZEOF_DATA_PTR EQUAL 8)
-            set(OPENBLAS_ROOT "/mingw64")
             add_definitions(-DMS_WIN64)
         elseif(CMAKE_CXX_SIZEOF_DATA_PTR EQUAL 4)
-            set(OPENBLAS_ROOT "/mingw32")
         else()
             message(FATAL_ERROR "Unsupported pointer size")
         endif()
     endif()
 
-    target_include_directories(pitensor PUBLIC "${OPENBLAS_ROOT}/include/OpenBLAS")
+    target_include_directories(pitensor PUBLIC "${MINGW_ROOT}/include/OpenBLAS")
     find_library(OPENBLAS_LIBRARY
         NAMES openblas
-        HINTS "${OPENBLAS_ROOT}/lib"
+        HINTS "${MINGW_ROOT}/lib"
     )
     set(ITENSOR_PLATFORM openblas)
     set(ITENSOR_BLAS_LAPACK_LIBFLAGS "${OPENBLAS_LIBRARY}")
-    set(ITENSOR_BLAS_LAPACK_INCLUDEFLAGS "-I${OPENBLAS_ROOT}/include/OpenBLAS")
+    set(ITENSOR_BLAS_LAPACK_INCLUDEFLAGS "-I${MINGW_ROOT}/include/OpenBLAS")
 
     target_link_libraries(pitensor
         PRIVATE
@@ -188,13 +188,28 @@ elseif(MSYS AND MINGW)
     )
     target_link_libraries(pitensor
         PRIVATE
-            # TODO(kyungminlee): dynamically link libraries and include DLL files in setup.py
-            general "-static -static-libgcc -static-libstdc++" # statically link all libraries (without needing DLLs)
-            general "-Wl,-Bstatic"
             general "${OPENBLAS_LIBRARY}"
             general gfortran
             general quadmath
     )
+
+    file(GLOB libopenblas_dll   "${MINGW_ROOT}/bin/libopenblas*.dll")
+    file(GLOB libwinpthread_dll "${MINGW_ROOT}/bin/libwinpthread*.dll")
+    file(GLOB libgfortran_dll   "${MINGW_ROOT}/bin/libgfortran*.dll")
+    file(GLOB libquadmath_dll   "${MINGW_ROOT}/bin/libquadmath*.dll")
+    file(GLOB libstdcpp_dll     "${MINGW_ROOT}/bin/libstdc++*.dll")
+    file(GLOB libgcc_dll        "${MINGW_ROOT}/bin/libgcc*.dll")
+
+    add_custom_target(DllBinaries
+        COMMAND ${CMAKE_COMMAND} -E copy "${libopenblas_dll}"   "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
+        COMMAND ${CMAKE_COMMAND} -E copy "${libwinpthread_dll}" "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
+        COMMAND ${CMAKE_COMMAND} -E copy "${libgfortran_dll}"   "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
+        COMMAND ${CMAKE_COMMAND} -E copy "${libquadmath_dll}"   "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
+        COMMAND ${CMAKE_COMMAND} -E copy "${libstdcpp_dll}"     "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
+        COMMAND ${CMAKE_COMMAND} -E copy "${libgcc_dll}"        "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
+    )
+
+    add_dependencies(pitensor DllBinaries)
 elseif(UNIX)
     set(CMAKE_AR "gcc-ar")
     set(CMAKE_RANLIB "gcc-ranlib")
@@ -273,7 +288,7 @@ ExternalProject_Add(ITensor_external
     CONFIGURE_COMMAND "${CMAKE_COMMAND}" -E copy 
         "${PITENSOR_DEPENDENCY_DIR}/options.mk"
         "${PITENSOR_DEPENDENCY_DIR}/ITensor/options.mk"
-    BUILD_COMMAND "make"
+    BUILD_COMMAND "${CMAKE_MAKE_PROGRAM}"
     INSTALL_COMMAND ""
     WORKING_DIRECTORY "${PITENSOR_DEPENDENCY_DIR}/ITensor"
 )
