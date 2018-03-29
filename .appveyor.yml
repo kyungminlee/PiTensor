@@ -1,3 +1,6 @@
+branches:
+  only:
+  - master
 version: 0.2.0.{build}
 environment:
   matrix:
