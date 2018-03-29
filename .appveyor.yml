@@ -25,7 +25,7 @@ environment:
       MSYSTEM: MINGW32
       BIT: 64
       PYTHON_DIR: Python36
-build_script:
+before_build:
   - C:\%PYTHON_DIR%\python.exe -m pip install --upgrade pip setuptools wheel
   - SET "PATH=C:\%MSYS2_DIR%\%MSYSTEM%\bin;C:\%MSYS2_DIR%\usr\bin;%PATH%"
   - bash -lc "pacman -S --needed --noconfirm pacman-mirrors"
@@ -35,9 +35,12 @@ build_script:
   - bash -lc "pacman -S --needed --noconfirm mingw-w64-%MSYS2_ARCH%-toolchain mingw-w64-%MSYS2_ARCH%-cmake mingw-w64-%MSYS2_ARCH%-openblas"
   - cd %APPVEYOR_BUILD_FOLDER%
   - git submodule update --init --recursive
+build_script:
   - bash -lc "cd $APPVEYOR_BUILD_FOLDER; /c/%PYTHON_DIR%/python.exe setup.py build_ext"
   - bash -lc "cd $APPVEYOR_BUILD_FOLDER; /c/%PYTHON_DIR%/python.exe setup.py bdist_wheel"
   - bash -lc "cd $APPVEYOR_BUILD_FOLDER; /c/%PYTHON_DIR%/python.exe setup.py install"
 test_script:
   - cd %APPVEYOR_BUILD_FOLDER%
   - C:\%PYTHON_DIR%\python.exe tests/test_itensor.py -v
+artifacts:
+  - path: "dist/pitensor-*.whl"
