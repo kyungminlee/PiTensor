@@ -51,5 +51,9 @@ matrix:
     env:
     - CC=clang CXX=clang++
 deploy:
+  provider: bintray
+  file: dist/pitensor*.whl
+  file_glob: true
+  user: kyungminlee
   key:
     secure: u1NHx/7aXJB3ofzqRMEIHwSIee90Jzc2KD1CMj0PNcIlgcZu8Ru2itnPFzmQ6pJtHOntBsI4DNhmysf1dOmpaXEBmYesaEtXIF4YaBUJdZA1Xw8aRJKx0/x6DX9ZTWkxqkpbXrKW2TCb4G/er25lb/Ukj2s/dFgs4q5M0E6GstanUd8PIfAoCja/7KcmfpC9RjzeqWwJuMS3C2V0HRCgZNxJ//OzFES4xWTKZd6vx7tcloOKGttvtTx2qr5gfhLq8r61DF+zDOayLqsWDQXaJcrD9iQso/l9usP1FuvDX9dLUwhmt6w6/BW1AXfzV1B6rDLneOqSanH6NXqwzPXE0sTlZLgc+sUodcXa17F0GlM71aNxYi++ZwkVmGZBa70gdUJkeUV4HkTrlfeHwrMUjgGy0GOlmUzM+rekaPEJ5ZsGeH1ehsA31Vvw/6ST08REVAHUnhwTm9dRAE1WLAPe+w6m/iXA8hXhVhG9BRC7KOh1R+rF86slKDniGyBFXBhrOGtiCqZWpJHSxF4Mkr8yYYPz5x59VyWQ8DMEO5ZpUtomcFL+Bqnvm9yNlrwbUpr+PZtdUb3LvxKt2nLq/GJoD4PwR7crZmsk/iS9KG1Y1Kns73m5Kik4Pp91WshRsPJWdPcMp1gF43QgVE5bCeDd3nQygFXtt36SJ2Y0mt/eX5M=
