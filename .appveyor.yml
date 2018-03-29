@@ -44,3 +44,18 @@ test_script:
   - C:\%PYTHON_DIR%\python.exe tests/test_itensor.py -v
 artifacts:
   - path: "dist/pitensor-*.whl"
+deploy:
+  - provider: BinTray
+    username: kyungminlee
+    api_key:
+      secure: 2qk3riUWS0zwIg7gJI86wGgTtvdoFHbzHYMNpG1fWBO+NlrWsWHrvhVza4nn9AtE
+    subject: kyungminlee
+    repo: PiTensor
+    package: PiTensor
+    version: 0.2.0.{build}
+    publish: true
+    override: true
+    explode: true
+    on:
+      branch: master
+
