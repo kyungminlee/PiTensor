@@ -1,5 +1,8 @@
 notifications:
   email: false
+branches:
+  only:
+  - master
 script:
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
   - python setup.py build_ext
