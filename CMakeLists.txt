@@ -132,10 +132,9 @@ add_subdirectory(pybind11)
 
 pybind11_add_module(pitensor ${SOURCE_FILES})
 
-math(EXPR PTR_SIZE "8*${CMAKE_CXX_SIZEOF_DATA_PTR}")
-set(PITENSOR_DEPENDENCY_DIR "${CMAKE_BINARY_DIR}/deps/${CMAKE_CXX_PLATFORM_ID}${PTR_SIZE}")
+set(PITENSOR_DEPENDENCY_DIR "${CMAKE_BINARY_DIR}/deps")
 
-target_include_directories(pitensor PUBLIC ${PITENSOR_DEPENDENCY_DIR}/ITensor)
+target_include_directories(pitensor PUBLIC "${PITENSOR_DEPENDENCY_DIR}/ITensor")
 
 if(APPLE)
     # https://stackoverflow.com/questions/26185978/macos-wchar-h-file-not-found
@@ -143,13 +142,13 @@ if(APPLE)
     set(ITENSOR_BLAS_LAPACK_LIBFLAGS "-framework Accelerate")
     set(ITENSOR_BLAS_LAPACK_INCLUDEFLAGS "")
     find_library(ACCELERATE_LIBRARY Accelerate)
-    set(ITENSOR_LIB_OPTIMIZED ${PITENSOR_DEPENDENCY_DIR}/ITensor/lib/libitensor.a)
-    set(ITENSOR_LIB_DEBUG ${PITENSOR_DEPENDENCY_DIR}/ITensor/lib/libitensor-g.a)
+    set(ITENSOR_LIB_OPTIMIZED "${PITENSOR_DEPENDENCY_DIR}/ITensor/lib/libitensor.a")
+    set(ITENSOR_LIB_DEBUG "${PITENSOR_DEPENDENCY_DIR}/ITensor/lib/libitensor-g.a")
     target_link_libraries(pitensor 
         PRIVATE 
-            optimized ${ITENSOR_LIB_OPTIMIZED}
-            debug ${ITENSOR_LIB_DEBUG}
-            general ${ACCELERATE_LIBRARY}
+            optimized "${ITENSOR_LIB_OPTIMIZED}"
+            debug "${ITENSOR_LIB_DEBUG}"
+            general "${ACCELERATE_LIBRARY}"
     )
 elseif(MSYS AND MINGW)
     set(CMAKE_AR "gcc-ar")
@@ -206,17 +205,17 @@ elseif(UNIX)
     set(ITENSOR_PLATFORM lapack)
     set(ITENSOR_BLAS_LAPACK_LIBFLAGS "${LAPACK_LIBRARY} ${BLAS_LIBRARY} -lpthread")
     set(ITENSOR_BLAS_LAPACK_INCLUDEFLAGS "-I${BLAS_LAPACK_ROOT}/include")
-    set(ITENSOR_LIB_OPTIMIZED ${PITENSOR_DEPENDENCY_DIR}/ITensor/lib/libitensor.a)
-    set(ITENSOR_LIB_DEBUG ${PITENSOR_DEPENDENCY_DIR}/ITensor/lib/libitensor-g.a)
+    set(ITENSOR_LIB_OPTIMIZED "${PITENSOR_DEPENDENCY_DIR}/ITensor/lib/libitensor.a")
+    set(ITENSOR_LIB_DEBUG "${PITENSOR_DEPENDENCY_DIR}/ITensor/lib/libitensor-g.a")
     target_link_libraries(pitensor
         PRIVATE
-            optimized ${ITENSOR_LIB_OPTIMIZED}
-            debug ${ITENSOR_LIB_DEBUG}
+            optimized "${ITENSOR_LIB_OPTIMIZED}"
+            debug "${ITENSOR_LIB_DEBUG}"
     )
     target_link_libraries(pitensor
         PRIVATE
-            general ${LAPACK_LIBRARY}
-            general ${BLAS_LIBRARY}
+            general "${LAPACK_LIBRARY}"
+            general "${BLAS_LIBRARY}"
             general pthread
     )
 elseif(MSVC)
@@ -269,7 +268,7 @@ ExternalProject_Add(ITensor_external
     GIT_TAG pitensor
     UPDATE_COMMAND ""
     PATCH_COMMAND ""
-    CONFIGURE_COMMAND ${CMAKE_COMMAND} -E copy 
+    CONFIGURE_COMMAND "${CMAKE_COMMAND}" -E copy 
         "${PITENSOR_DEPENDENCY_DIR}/options.mk"
         "${PITENSOR_DEPENDENCY_DIR}/ITensor/options.mk"
     BUILD_COMMAND "make"
