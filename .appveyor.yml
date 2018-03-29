@@ -52,7 +52,7 @@ deploy:
     subject: kyungminlee
     repo: PiTensor
     package: PiTensor
-    version: 0.2.0.{build}
+    version: 0.2.0
     publish: false
     override: true
     explode: false
