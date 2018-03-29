@@ -7,7 +7,7 @@ environment:
       MSYS2_DIR: msys64
       MSYSTEM: MINGW64
       BIT: 64
-      PYTHON_DIR: Python33-x64
+      PYTHON_DIR: Python35-x64
     - COMPILER: msys2
       PLATFORM: x64
       MSYS2_ARCH: x86_64
