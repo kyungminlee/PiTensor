@@ -132,20 +132,23 @@ add_subdirectory(pybind11)
 
 pybind11_add_module(pitensor ${SOURCE_FILES})
 
-target_include_directories(pitensor PUBLIC ${CMAKE_BINARY_DIR}/deps/ITensor)
+set(PITENSOR_DEPENDENCY_DIR "${CMAKE_BINARY_DIR}/deps")
+
+target_include_directories(pitensor PUBLIC "${PITENSOR_DEPENDENCY_DIR}/ITensor")
 
 if(APPLE)
+    # https://stackoverflow.com/questions/26185978/macos-wchar-h-file-not-found
     set(ITENSOR_PLATFORM macos)
     set(ITENSOR_BLAS_LAPACK_LIBFLAGS "-framework Accelerate")
     set(ITENSOR_BLAS_LAPACK_INCLUDEFLAGS "")
     find_library(ACCELERATE_LIBRARY Accelerate)
-    set(ITENSOR_LIB_OPTIMIZED ${CMAKE_BINARY_DIR}/deps/ITensor/lib/libitensor.a)
-    set(ITENSOR_LIB_DEBUG ${CMAKE_BINARY_DIR}/deps/ITensor/lib/libitensor-g.a)
+    set(ITENSOR_LIB_OPTIMIZED "${PITENSOR_DEPENDENCY_DIR}/ITensor/lib/libitensor.a")
+    set(ITENSOR_LIB_DEBUG "${PITENSOR_DEPENDENCY_DIR}/ITensor/lib/libitensor-g.a")
     target_link_libraries(pitensor 
         PRIVATE 
-            optimized ${ITENSOR_LIB_OPTIMIZED}
-            debug ${ITENSOR_LIB_DEBUG}
-            general ${ACCELERATE_LIBRARY}
+            optimized "${ITENSOR_LIB_OPTIMIZED}"
+            debug "${ITENSOR_LIB_DEBUG}"
+            general "${ACCELERATE_LIBRARY}"
     )
 elseif(MSYS AND MINGW)
     set(CMAKE_AR "gcc-ar")
@@ -178,8 +181,8 @@ elseif(MSYS AND MINGW)
 
     target_link_libraries(pitensor
         PRIVATE
-            optimized "${CMAKE_BINARY_DIR}/deps/ITensor/lib/libitensor.a"
-            debug "${CMAKE_BINARY_DIR}/deps/ITensor/lib/libitensor-g.a"
+            optimized "${PITENSOR_DEPENDENCY_DIR}/ITensor/lib/libitensor.a"
+            debug "${PITENSOR_DEPENDENCY_DIR}/ITensor/lib/libitensor-g.a"
     )
     target_link_libraries(pitensor
         PRIVATE
@@ -202,17 +205,17 @@ elseif(UNIX)
     set(ITENSOR_PLATFORM lapack)
     set(ITENSOR_BLAS_LAPACK_LIBFLAGS "${LAPACK_LIBRARY} ${BLAS_LIBRARY} -lpthread")
     set(ITENSOR_BLAS_LAPACK_INCLUDEFLAGS "-I${BLAS_LAPACK_ROOT}/include")
-    set(ITENSOR_LIB_OPTIMIZED ${CMAKE_BINARY_DIR}/deps/ITensor/lib/libitensor.a)
-    set(ITENSOR_LIB_DEBUG ${CMAKE_BINARY_DIR}/deps/ITensor/lib/libitensor-g.a)
+    set(ITENSOR_LIB_OPTIMIZED "${PITENSOR_DEPENDENCY_DIR}/ITensor/lib/libitensor.a")
+    set(ITENSOR_LIB_DEBUG "${PITENSOR_DEPENDENCY_DIR}/ITensor/lib/libitensor-g.a")
     target_link_libraries(pitensor
         PRIVATE
-            optimized ${ITENSOR_LIB_OPTIMIZED}
-            debug ${ITENSOR_LIB_DEBUG}
+            optimized "${ITENSOR_LIB_OPTIMIZED}"
+            debug "${ITENSOR_LIB_DEBUG}"
     )
     target_link_libraries(pitensor
         PRIVATE
-            general ${LAPACK_LIBRARY}
-            general ${BLAS_LIBRARY}
+            general "${LAPACK_LIBRARY}"
+            general "${BLAS_LIBRARY}"
             general pthread
     )
 elseif(MSVC)
@@ -223,7 +226,7 @@ endif()
 
 string(REPLACE ";" " " LTO_FLAGS "${PYBIND11_LTO_CXX_FLAGS}")
 
-file(WRITE "${CMAKE_BINARY_DIR}/deps/options.mk" "\
+file(WRITE "${PITENSOR_DEPENDENCY_DIR}/options.mk" "\
 CCCOM=${CMAKE_CXX_COMPILER} ${CMAKE_CXX14_EXTENSION_COMPILE_OPTION} ${LTO_FLAGS} ${CMAKE_CXX_COMPILE_OPTIONS_PIC}
 AR=${CMAKE_AR}
 RANLIB=${CMAKE_RANLIB}
@@ -255,22 +258,22 @@ LIBGFLAGS=-L$(ITENSOR_LIBDIR) $(ITENSOR_LIBGFLAGS)
 
 include(ExternalProject)
 ExternalProject_Add(ITensor_external
-    TMP_DIR      "${CMAKE_BINARY_DIR}/deps/ITensor-tmp"
-    STAMP_DIR    "${CMAKE_BINARY_DIR}/deps/ITensor-stamp"
-    DOWNLOAD_DIR "${CMAKE_BINARY_DIR}/deps"
-    SOURCE_DIR   "${CMAKE_BINARY_DIR}/deps/ITensor"
-    BINARY_DIR   "${CMAKE_BINARY_DIR}/deps/ITensor"
-    INSTALL_DIR  "${CMAKE_BINARY_DIR}/deps/ITensor"
+    TMP_DIR      "${PITENSOR_DEPENDENCY_DIR}/ITensor-tmp"
+    STAMP_DIR    "${PITENSOR_DEPENDENCY_DIR}/ITensor-stamp"
+    DOWNLOAD_DIR "${PITENSOR_DEPENDENCY_DIR}"
+    SOURCE_DIR   "${PITENSOR_DEPENDENCY_DIR}/ITensor"
+    BINARY_DIR   "${PITENSOR_DEPENDENCY_DIR}/ITensor"
+    INSTALL_DIR  "${PITENSOR_DEPENDENCY_DIR}/ITensor"
     GIT_REPOSITORY https://github.com/kyungminlee/ITensor.git
     GIT_TAG pitensor
     UPDATE_COMMAND ""
     PATCH_COMMAND ""
-    CONFIGURE_COMMAND ${CMAKE_COMMAND} -E copy 
-        "${CMAKE_BINARY_DIR}/deps/options.mk"
-        "${CMAKE_BINARY_DIR}/deps/ITensor/options.mk"
+    CONFIGURE_COMMAND "${CMAKE_COMMAND}" -E copy 
+        "${PITENSOR_DEPENDENCY_DIR}/options.mk"
+        "${PITENSOR_DEPENDENCY_DIR}/ITensor/options.mk"
     BUILD_COMMAND "make"
     INSTALL_COMMAND ""
-    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/deps/ITensor"
+    WORKING_DIRECTORY "${PITENSOR_DEPENDENCY_DIR}/ITensor"
 )
 
 add_dependencies(pitensor ITensor_external)
