@@ -4,7 +4,6 @@
         "repo": "PiTensor",
         "subject": "kyungminlee"
     },
-
     "version": {
         "name": "0.2.0.dev1",
         "desc": "This is a version",
@@ -12,10 +11,9 @@
         "attributes": [],
         "gpgSign": false
     },
-
     "files":
         [
-        {"includePattern": "dist/(.+\\.whl)", "uploadPattern": "$1"}
+        {"includePattern": "dist/(pitensor-.+\\.whl)", "uploadPattern": "$1"}
         ],
     "publish": false
 }

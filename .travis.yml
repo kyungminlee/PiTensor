@@ -52,6 +52,7 @@ matrix:
     - CC=clang CXX=clang++
 deploy:
   provider: bintray
+  skip_cleanup: true
   file: descriptor.json
   user: kyungminlee
   key:

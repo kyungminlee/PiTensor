@@ -4,56 +4,56 @@ branches:
 version: 0.2.0.{build}
 environment:
   matrix:
-    - COMPILER: msys2
-      PLATFORM: x64
-      MSYS2_ARCH: x86_64
-      MSYS2_DIR: msys64
-      MSYSTEM: MINGW64
-      BIT: 64
-      PYTHON_DIR: Python35-x64
-    - COMPILER: msys2
-      PLATFORM: x64
-      MSYS2_ARCH: x86_64
-      MSYS2_DIR: msys64
-      MSYSTEM: MINGW64
-      BIT: 64
-      PYTHON_DIR: Python36-x64
-    - COMPILER: msys2
-      PLATFORM: x86
-      MSYS2_ARCH: i686
-      MSYS2_DIR: msys64
-      MSYSTEM: MINGW32
-      BIT: 64
-      PYTHON_DIR: Python36
+  - COMPILER: msys2
+    PLATFORM: x64
+    MSYS2_ARCH: x86_64
+    MSYS2_DIR: msys64
+    MSYSTEM: MINGW64
+    BIT: 64
+    PYTHON_DIR: Python35-x64
+  - COMPILER: msys2
+    PLATFORM: x64
+    MSYS2_ARCH: x86_64
+    MSYS2_DIR: msys64
+    MSYSTEM: MINGW64
+    BIT: 64
+    PYTHON_DIR: Python36-x64
+  - COMPILER: msys2
+    PLATFORM: x86
+    MSYS2_ARCH: i686
+    MSYS2_DIR: msys64
+    MSYSTEM: MINGW32
+    BIT: 64
+    PYTHON_DIR: Python36
 before_build:
-  - C:\%PYTHON_DIR%\python.exe -m pip install --upgrade pip setuptools wheel
-  - SET "PATH=C:\%MSYS2_DIR%\%MSYSTEM%\bin;C:\%MSYS2_DIR%\usr\bin;%PATH%"
-  - bash -lc "pacman -S --needed --noconfirm pacman-mirrors"
-  - bash -lc "pacman -S --needed --noconfirm git"
-  - bash -lc "pacman -Syu --noconfirm"
-  - bash -lc "pacman -S --needed --noconfirm make"
-  - bash -lc "pacman -S --needed --noconfirm mingw-w64-%MSYS2_ARCH%-toolchain mingw-w64-%MSYS2_ARCH%-cmake mingw-w64-%MSYS2_ARCH%-openblas"
-  - cd %APPVEYOR_BUILD_FOLDER%
-  - git submodule update --init --recursive
+- C:\%PYTHON_DIR%\python.exe -m pip install --upgrade pip setuptools wheel
+- SET "PATH=C:\%MSYS2_DIR%\%MSYSTEM%\bin;C:\%MSYS2_DIR%\usr\bin;%PATH%"
+- bash -lc "pacman -S --needed --noconfirm pacman-mirrors"
+- bash -lc "pacman -S --needed --noconfirm git"
+- bash -lc "pacman -Syu --noconfirm"
+- bash -lc "pacman -S --needed --noconfirm make"
+- bash -lc "pacman -S --needed --noconfirm mingw-w64-%MSYS2_ARCH%-toolchain mingw-w64-%MSYS2_ARCH%-cmake mingw-w64-%MSYS2_ARCH%-openblas"
+- cd %APPVEYOR_BUILD_FOLDER%
+- git submodule update --init --recursive
 build_script:
-  - bash -lc "cd $APPVEYOR_BUILD_FOLDER; /c/%PYTHON_DIR%/python.exe setup.py build_ext"
-  - bash -lc "cd $APPVEYOR_BUILD_FOLDER; /c/%PYTHON_DIR%/python.exe setup.py bdist_wheel"
-  - bash -lc "cd $APPVEYOR_BUILD_FOLDER; /c/%PYTHON_DIR%/python.exe setup.py install"
+- bash -lc "cd $APPVEYOR_BUILD_FOLDER; /c/%PYTHON_DIR%/python.exe setup.py build_ext"
+- bash -lc "cd $APPVEYOR_BUILD_FOLDER; /c/%PYTHON_DIR%/python.exe setup.py bdist_wheel"
+- bash -lc "cd $APPVEYOR_BUILD_FOLDER; /c/%PYTHON_DIR%/python.exe setup.py install"
 test_script:
-  - cd %APPVEYOR_BUILD_FOLDER%
-  - C:\%PYTHON_DIR%\python.exe tests/test_itensor.py -v
+- cd %APPVEYOR_BUILD_FOLDER%
+- C:\%PYTHON_DIR%\python.exe tests/test_itensor.py -v
 artifacts:
-  - path: "dist/pitensor-*.whl"
+- path: "dist/pitensor-*.whl"
 deploy:
-  - provider: BinTray
-    username: kyungminlee
-    api_key:
-      secure: 2qk3riUWS0zwIg7gJI86wGgTtvdoFHbzHYMNpG1fWBO+NlrWsWHrvhVza4nn9AtE
-    subject: kyungminlee
-    repo: PiTensor
-    package: PiTensor
-    version: 0.2.0
-    publish: false
-    override: true
-    explode: false
+- provider: BinTray
+  username: kyungminlee
+  api_key:
+    secure: 2qk3riUWS0zwIg7gJI86wGgTtvdoFHbzHYMNpG1fWBO+NlrWsWHrvhVza4nn9AtE
+  subject: kyungminlee
+  repo: PiTensor
+  package: PiTensor
+  version: 0.2.0.dev1
+  publish: false
+  override: true
+  explode: false
 
