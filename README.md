@@ -33,7 +33,7 @@ python setup.py install
 - MSYS2 + MinGW
 - OpenBLAS (`mingw-w64-i686-openblas` or `mingw-w64-x86_64-openblas`)
 - CMake (`mingw-w64-i686-cmake` or `mingw-w64-x86_64-cmake`)
-- Python 3 (for Windows, not for MSYS2)
+- Python 3
 
 ### Getting Started
 
@@ -46,8 +46,8 @@ T.fill(1.0)
 U = pitensor.ITensor(i)
 S = pitensor.ITensor()
 V = pitensor.ITensor()
-foo = pitensor.svd(T, U, S, V)
-print(foo)
+err = pitensor.svd(T, U, S, V)
+print(err)
 print(T)
 print(U)
 print(S)
