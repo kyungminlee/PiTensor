@@ -49,5 +49,6 @@ initSpinOneSite(pybind11::module& module)
 
 void pitensor::mps::sites::spinone(pybind11::module& module)
 {
+  auto typeSpinOne = initSpinOne(module);
   auto typeSpinOneSite = initSpinOneSite(module);
 }
