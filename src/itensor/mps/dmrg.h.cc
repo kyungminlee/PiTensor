@@ -106,9 +106,38 @@ _init(pybind11::module& module)
            py::arg("obs"),
            py::arg("args")=Global::args())
   ;
+}
 
-  // TODO DMRGWorker
 
+template <class Tensor, class LocalOpT>
+static inline
+void
+_initDMRGWorker(pybind11::module& module)
+{
+  module
+      /*
+      .def("DMRGWorker",
+           (Real (*)(MPSt<Tensor> &,
+                     LocalOpT &,
+                     Sweeps const &,
+                     Args const &)) &DMRGWorker,
+           py::arg("psi"),
+           py::arg("PH"),
+           py::arg("sweeps"),
+           py::arg("args")=Global::args())
+      .def("DMRGWorker",
+           (Real (*)(MPSt<Tensor> &,
+                     LocalOpT &,
+                     Sweeps const &,
+                     DMRGObserver<Tensor> &,
+                     Args const &)) &DMRGWorker,
+           py::arg("psi"),
+           py::arg("PH"),
+           py::arg("sweeps"),
+           py::arg("obs"),
+           py::arg("args")=Global::args())
+      */
+      ;
 }
 
 
@@ -116,4 +145,11 @@ void pitensor::mps::dmrg(pybind11::module& module)
 {
   _init<ITensor>(module);
   _init<IQTensor>(module);
+  // TODO: find all combinations? all relevant classes?
+#if 0
+  _initDMRGWorker<ITensor, LocalMPO<ITensor>>(module);
+  _initDMRGWorker<IQTensor, LocalMPO<IQTensor>>(module);
+  _initDMRGWorker<ITensor, LocalMPOSet<ITensor>>(module);
+  _initDMRGWorker<IQTensor, LocalMPOSet<IQTensor>>(module);
+#endif
 }
