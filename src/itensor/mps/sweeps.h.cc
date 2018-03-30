@@ -82,7 +82,6 @@ initSweeps(pybind11::module& module)
               if (py::list(obj).size() != self.nsweep()) {
                 throw std::length_error("Length of the list does not match the number of sweeps");
               }
-
               int i = 0;
               for (auto const & item : py::list(obj)) {
                 Real r = item.cast<Real>(); // this does type check
@@ -99,8 +98,9 @@ initSweeps(pybind11::module& module)
             }
           }
       )
-    // TODO noise
-    // TODO niter
+    // TODO noise (peculiar behavior with single argument)
+    // TODO niter (peculiar behavior with single argument)
+    // TODO read
     // TODO write
   ;
 }
@@ -108,4 +108,7 @@ initSweeps(pybind11::module& module)
 void pitensor::mps::sweeps(pybind11::module& module)
 {
   initSweeps(module);
+  // TODO RampM
+  // TODO ExpM
+  // TODO sweepnext and sweepnext1
 }
