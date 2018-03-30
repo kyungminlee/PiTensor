@@ -69,7 +69,36 @@ initSweeps(pybind11::module& module)
            (int (Sweeps::*)(int, int)) &Sweeps::setmaxm)
           // TODO: bound check
       .def("__repr__", [](Sweeps const & obj) { std::stringstream ss; ss << obj; return ss.str(); })
-    // TODO cutoff
+      .def_property("cutoff",
+          [](Sweeps const & self) -> std::vector<Real> {
+            std::vector<Real> res;
+            for (int i = 0, ns = self.nsweep() ; i < ns ; ++i) {
+              res.push_back(self.cutoff(i));
+            }
+            return res;
+          },
+          [](Sweeps & self, py::object obj) { // Overloading (list vs single Real)
+            if (py::isinstance<py::list>(obj)) {
+              if (py::list(obj).size() != self.nsweep()) {
+                throw std::length_error("Length of the list does not match the number of sweeps");
+              }
+
+              int i = 0;
+              for (auto const & item : py::list(obj)) {
+                Real r = item.cast<Real>(); // this does type check
+                self.setcutoff(i, r);
+                ++i;
+              }
+            } else if (py::isinstance<py::float_>(obj)) {
+              Real v = obj.cast<Real>();
+              for (int i = 0, ns = self.nsweep() ; i < ns ; ++i) {
+                self.setcutoff(i, v);
+              }
+            } else {
+              throw std::domain_error("Unsupported type");
+            }
+          }
+      )
     // TODO noise
     // TODO niter
     // TODO write
