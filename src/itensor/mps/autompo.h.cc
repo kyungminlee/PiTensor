@@ -108,4 +108,5 @@ void pitensor::mps::autompo(pybind11::module& module)
   _init<IQTensor>(module);
   initSiteTerm(module);
   initHTerm(module);
+  initAutoMPO(module);
 }
