@@ -15,10 +15,14 @@ initMPOt(pybind11::module& module, const char* typeName)
       .def(py::init<>())
       .def(py::init<SiteSet const&, Real>(),
            py::arg("sites"),
-           py::arg("refNorm") = DefaultLogRefScale) // TODO: variable name mismatch with ITensor
+           py::arg("refNorm")=DefaultLogRefScale) // TODO: variable name mismatch with ITensor
   ;
+
   type
       .def("__bool__", [](mpo_type const & self) { return static_cast<bool>(self); })
+  ;
+
+  type
       .def("logRefNorm", &mpo_type::logRefNorm)
       .def("plusEq", &mpo_type::plusEq)
       .def("toMPO", &mpo_type::toMPO)
@@ -86,9 +90,9 @@ initMPOt(pybind11::module& module, const char* typeName)
 #endif
       .def("overlapC",
            (Complex (*)(mps_type const &,
-                     mpo_type const &,
-                     mpo_type const &,
-                     mps_type const &)) &overlapC)
+                        mpo_type const &,
+                        mpo_type const &,
+                        mps_type const &)) &overlapC)
       .def("nmultMPO",
            (void (*)(mpo_type const &,
                      mpo_type const &,

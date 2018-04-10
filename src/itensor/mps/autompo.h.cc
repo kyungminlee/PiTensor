@@ -13,15 +13,15 @@ _init(pybind11::module& module)
   using mps_type = MPSt<Tensor>;
 
   module
-    .def("toMPO",
-         (mpo_type (*)(AutoMPO const&, Args const &)) &toMPO,
-         py::arg("a"),
-         py::arg("args")=Args::global())
-    .def("toExpH",
-         (mpo_type (*)(AutoMPO const &, Cplx, Args const & args)) &toExpH,
-         py::arg("a"),
-         py::arg("tau"),
-         py::arg("args")=Args::global())
+      .def("toMPO",
+           (mpo_type (*)(AutoMPO const&, Args const &)) &toMPO,
+           py::arg("a"),
+           py::arg("args")=Args::global())
+      .def("toExpH",
+           (mpo_type (*)(AutoMPO const &, Cplx, Args const & args)) &toExpH,
+           py::arg("a"),
+           py::arg("tau"),
+           py::arg("args")=Args::global())
   ;
 }
 
@@ -42,10 +42,12 @@ auto initSiteTerm(pybind11::module& module)
   ;
 
   type
-      .def("__repr__", [](SiteTerm const & obj) { std::stringstream ss; ss << obj; return ss.str(); })
+      .def("__repr__", [](SiteTerm const & obj) { std::stringstream ss; ss << std::scientific << obj; return ss.str(); })
   ;
 
-  module.def("isFermionic", (bool (*)(SiteTerm const &)) &isFermionic);
+  module
+      .def("isFermionic", (bool (*)(SiteTerm const &)) &isFermionic)
+  ;
 
   return type;
 }
@@ -77,7 +79,7 @@ auto initHTerm(pybind11::module& module)
       .def(py::self == py::self)
       .def(py::self != py::self)
       .def(py::self < py::self)
-      .def("__repr__", [](TheType const & obj) { std::stringstream ss; ss << obj; return ss.str(); })
+      .def("__repr__", [](TheType const & obj) { std::stringstream ss; ss << std::scientific << obj; return ss.str(); })
   ;
 }
 
@@ -97,7 +99,7 @@ auto initAutoMPO(pybind11::module& module)
     // TODO Accumulator
       .def("add", &AutoMPO::add)
       .def("reset", &AutoMPO::reset)
-      .def("__repr__", [](AutoMPO const & obj) { std::stringstream ss; ss << obj; return ss.str(); })
+      .def("__repr__", [](AutoMPO const & obj) { std::stringstream ss; ss << std::scientific << obj; return ss.str(); })
   ;
   return type;
 }

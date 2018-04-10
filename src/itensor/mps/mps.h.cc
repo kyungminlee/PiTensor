@@ -34,7 +34,7 @@ initMPSt(pybind11::module& module, const char* typeName)
       .def("plusEq",
            (mps_type& (mps_type::*)(mps_type const&, Args const&)) &mps_type::plusEq,
            py::arg("R"),
-           py::arg("args") = Args::global())
+           py::arg("args")=Args::global())
       .def("mapprime",
            (void (mps_type::*)(int, int, IndexType)) &mps_type::mapprime,
            py::arg("oldp"),

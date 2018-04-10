@@ -13,9 +13,12 @@ void pitensor::real(pybind11::module& module)
   py::class_<LogNum> type(module, "LogNum");
 
   type
-    .def(py::init<>())
-    .def(py::init<Real>())
-    .def(py::init<Real, int>())
+      .def(py::init<>())
+      .def(py::init<Real>())
+      .def(py::init<Real, int>(), py::arg("lognum"), py::arg("sign"))
+  ;
+
+  type
       .def("logNum", &LogNum::logNum)
       .def("sign", &LogNum::sign)
       .def("isZero", &LogNum::isZero)
@@ -53,6 +56,6 @@ void pitensor::real(pybind11::module& module)
          (LogNum (*)(LogNum)) &sqrt )
   ;
   type
-      .def("__repr__", [](LogNum const & self) { std::stringstream ss; ss<<self; ss.str(); })
+      .def("__repr__", [](LogNum const & self) { std::stringstream ss; ss << std::scientific << self; ss.str(); })
   ;
 }

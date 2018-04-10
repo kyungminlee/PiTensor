@@ -39,22 +39,22 @@ initIndex(pybind11::module& module)
       .def("prime",
            py::overload_cast<int>(&Index::prime),
            "Increase primelevel",
-           py::arg("inc") = 1)
+           py::arg("inc")=1)
       .def("prime",
            py::overload_cast<IndexType, int>(&Index::prime),
            "Increase primelevel",
            py::arg("type"),
-           py::arg("inc") = 1)
+           py::arg("inc")=1)
       .def("noprime",
            &Index::noprime,
            "Set primelevel to zero (optionally only if type matches)",
-           py::arg("type") = All)
+           py::arg("type")=All)
       .def("mapprime",
            &Index::mapprime,
            "Switch primelevel from plevold to plevnew",
            py::arg("plevold"),
            py::arg("plevnew"),
-           py::arg("type") = All)
+           py::arg("type")=All)
       .def("noprimeEquals",
            &Index::noprimeEquals,
            "Check if other Index is a copy of this, ignoring primeLevel")
@@ -76,13 +76,9 @@ initIndex(pybind11::module& module)
       .def(py::self > py::self)
       .def(py::self == IndexVal())
       .def("__repr__",
-           [](Index const & obj) -> std::string {
-             std::stringstream ss;
-             ss << obj;
-             return ss.str();
-           })
+           [](Index const & obj) -> std::string { std::stringstream ss; ss << std::scientific << obj; return ss.str(); })
+  ;
 
-      ;
   module
       .def("dag",
            (Index (*)(Index)) &dag)
@@ -162,14 +158,8 @@ initIndexVal(pybind11::module& module)
       .def(py::self == py::self)
       .def(py::self != py::self)
       .def(py::self == Index())
-      .def("__repr__",
-           [](IndexVal const & obj) -> std::string {
-             std::stringstream ss;
-             ss << obj;
-             return ss.str();
-           })
-
-      ;
+      .def("__repr__", [](IndexVal const & obj) -> std::string { std::stringstream ss; ss << std::scientific << obj; return ss.str(); })
+  ;
   return type;
 }
 
