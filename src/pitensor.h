@@ -30,8 +30,89 @@ void recursiveConstructor(T & type) {
   type.def(pybind11::init<Arg, Args...>());
 }
 
+#if 0 // First Test Recursive Call
+template <typename T, typename RetType>
+struct RecursiveDefinition
+{
+  template <typename FuncType>
+  RecursiveDefinition(T & type, const char* funcName, FuncType &&f)
+  {
+    type.def(funcName, pybind11::overload_cast<RetType>(f));
+  }
+};
 
-#if 1
+template <typename T, typename RetType, typename ...ArgTypes, typename ArgType>
+struct RecursiveDefinition
+{
+  template <typename FuncType>
+  RecursiveDefinition(T & type, const char* funcName, FuncType &&f)
+    : RecursiveDefinition<T, RetType, ArgTypes...>(T, funcName, f)
+  {
+    type.def(funcName, pybind11::overload_cast<RetType, ArgTypes&&..., ArgType&&>(f));
+  }
+};
+#endif
+
+template <typename T, typename RetType, typename FuncType>
+void recursiveMember(T & type, const char* funcName, FuncType && f)
+{
+  type.def(funcName, pybind11::overload_cast<RetType>(f));
+}
+
+template <typename T, typename RetType, typename ...ArgTypes, typename ArgType, typename FuncType>
+void recursiveMember(T & type, const char* funcName, FuncType && f)
+{
+  type.def(funcName, pybind11::overload_cast<RetType, ArgTypes&&..., ArgType&&>(f));
+  recursiveMember<T, RetType, ArgTypes..., FuncType>(type, funcName, f);
+}
+
+
+class pythonbytebuf : public std::streambuf {
+ private:
+  using traits_type = std::streambuf::traits_type;
+
+  char d_buffer[1024];
+  pybind11::object pywrite;
+  pybind11::object pyflush;
+
+  int overflow(int c) {
+    if (!traits_type::eq_int_type(c, traits_type::eof())) {
+      *pptr() = traits_type::to_char_type(c);
+      pbump(1);
+    }
+    return sync() ? traits_type::not_eof(c) : traits_type::eof();
+  }
+
+  int sync() {
+    if (pbase() != pptr()) {
+      pybind11::bytes line(pbase(), static_cast<size_t>(pptr() - pbase()));
+      pywrite(line);
+      pyflush();
+      setp(pbase(), epptr());
+    }
+    return 0;
+  }
+ public:
+  pythonbytebuf(pybind11::object pyostream)
+  : pywrite(pyostream.attr("write"))
+  , pyflush(pyostream.attr("flush")) {
+    if (!pyostream.attr("writable")().cast<bool>()) {
+      throw std::invalid_argument("input stream should be writeable");
+    }
+    if (!pybind11::isinstance(pyostream, pybind11::module::import("io").attr("BufferedIOBase"))) {
+      throw std::invalid_argument("input stream should be binary-writeable");
+    }
+
+    setp(d_buffer, d_buffer + sizeof(d_buffer) - 1);
+  }
+
+  ~pythonbytebuf() {
+    sync();
+  }
+};
+
+
+#if 0
 template <typename T,
     typename RetType,
     typename NameSpace,
