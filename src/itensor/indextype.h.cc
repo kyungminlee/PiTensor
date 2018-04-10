@@ -5,23 +5,29 @@ using namespace itensor;
 
 void pitensor::indextype(pybind11::module& module)
 {
+  using Type = IndexType;
   py::class_<IndexType> type(module, "IndexType");
 
   type
-    .def(py::init<const char*>())
-    .def_property_readonly_static("size", &IndexType::size)
-    .def("c_str", &IndexType::c_str)
-    .def("__repr__",
-         [](IndexType const & obj) -> std::string {
-           std::stringstream ss; ss << static_cast<const char*>(obj); return ss.str();
-         })
-    .def("__getitem__",
-         [](IndexType const & obj, size_t i) -> char { return obj[i]; })
-    .def("__setitem__",
-         [](IndexType& obj, size_t i, char c) -> void { obj[i] = c; })
+      .def(py::init<const char*>())
+      .def_property_readonly_static("size", &IndexType::size)
+      .def_property_readonly("name",
+           [](IndexType const & self) -> std::string {
+             return std::string(self.c_str());
+           })
+    //.def("c_str", &IndexType::c_str)
   ;
 
-  module.attr("All") = All;
+  type
+      .def("__repr__", [](Type const & obj) -> std::string { std::stringstream ss; ss << std::scientific << static_cast<const char*>(obj); return ss.str(); })
+      .def("__getitem__", [](IndexType const & obj, size_t i) -> char { return obj[i]; })
+      .def("__setitem__", [](IndexType& obj, size_t i, char c) -> void { obj[i] = c; })
+  ;
+
+  module
+  // TODO read write
+  ;
+
   module.attr("All") = All;
   module.attr("NullInd") = NullInd;
   module.attr("Link") = Link;
