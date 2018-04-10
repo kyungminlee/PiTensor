@@ -32,7 +32,10 @@ struct InitializerITensorT {
   : module (theModule), name(theName), type(module, name) {
     initConstructor();
     initOperator();
+    initMethod();
     initRealCplx();
+    initPrime();
+    initFunction();
   }
 
   void initConstructor() {
@@ -1012,10 +1015,7 @@ struct InitializerITensorT {
          (Cplx(*)(itensor_type const &)) &sumelsC)
     // TODO multiSiteOps
     ;
-
-    return type;
-  } // initITensorT(pybind11::module& module, const char* name)
-
+  }
 };
 
 
@@ -1028,14 +1028,11 @@ void pitensor::itensor_interface(pybind11::module& module)
   auto typeITensor = initITensor.type;
   auto typeIQTensor = initIQTensor.type;
 
-  //auto typeITensor = InitializerinitITensorT<Index>(module, "ITensor");
-  //auto typeIQTensor = initITensorT<IQIndex>(module, "IQTensor");
-
   typeITensor
       .def(py::self *= IndexVal())
       .def(py::self * IndexVal())
       .def(IndexVal() * py::self)
-          ;
+  ;
 
   module
       .def("combiner",
@@ -1123,11 +1120,8 @@ void pitensor::itensor_interface(pybind11::module& module)
   //  .def('__imul__', )
   ;
 
-
-  //initDiagTensor<>(module);
   initDiagTensor<std::vector<Real> >(module);
   initDiagTensor<std::vector<Cplx> >(module);
-
 
   // TODO operator IndexVal * IndexVal
   // TODO IndexVal * Cplx
