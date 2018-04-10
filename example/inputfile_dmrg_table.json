@@ -1,0 +1,11 @@
+{
+  "N": 100,
+  "sweeps": [
+    {"maxm": 50, "minm": 20, "cutoff": 1E-6, "niter": 4, "noise": 1E-7},
+    {"maxm": 50, "minm": 20, "cutoff": 1E-6, "niter": 4, "noise": 1E-7},
+    {"maxm": 50, "minm": 20, "cutoff": 1E-6, "niter": 4, "noise": 1E-7},
+    {"maxm": 50, "minm": 20, "cutoff": 1E-6, "niter": 4, "noise": 1E-7},
+    {"maxm": 50, "minm": 20, "cutoff": 1E-6, "niter": 4, "noise": 1E-7}
+  ],
+  "quiet": false
+}
