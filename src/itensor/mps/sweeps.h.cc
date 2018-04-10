@@ -18,10 +18,6 @@ initSweeps(pybind11::module& module)
            py::arg("cutoff")=1E-8);
   type.def(py::init<int, InputGroup &>()); // TODO: InputGroup
 
-  // std::vector<int> maxm_, minm_, niter_;
-  // std::vector<Real> cutoff_, noise_;
-  // int nsweep_;
-
   type
       .def_property("nsweep",
                     (int (Sweeps::*)() const) &Sweeps::nsweep,
@@ -30,78 +26,143 @@ initSweeps(pybind11::module& module)
       .def_property("minm",
                     [](Sweeps const & self) -> std::vector<int> {
                       std::vector<int> res;
-                      // TODO: check 0-based or 1-based.
                       for (int i = 0, ns = self.nsweep() ; i < ns ; ++i) {
-                        res.push_back(self.minm(i));
+                        res.push_back(self.minm(i+1));  // 1-based.
                       }
                       return res;
                     },
-                    [](Sweeps & self, std::vector<int> const & minm) {
-                      int curMinM = 1;
-                      for (int i = 0, ns = self.nsweep() ; i < ns ; ++i) {
-                        if (i < minm.size()) { curMinM = minm[i]; }
-                        if (curMinM > 0) { self.setminm(i, curMinM); }
-                        // TODO: document : set only positive
+                    [](Sweeps & self, py::object obj) { // Overloading (list vs single Real)
+                      if (py::isinstance<py::list>(obj)) {
+                        py::list lst(obj);
+                        int v = 1;
+                        for (int i = 0, ns = self.nsweep() ; i < ns ; ++i) {
+                          if (i < py::len(lst)) {
+                            v = lst[i].cast<int>();
+                          }
+                          self.setminm(i+1, v);
+                        }
+                      } else if (py::isinstance<py::int_>(obj)) {
+                        int v = obj.cast<int>();
+                        for (int i = 0, ns = self.nsweep() ; i < ns ; ++i) {
+                          self.setminm(i+1, v);
+                        }
+                      } else {
+                        throw std::domain_error("Unsupported type");
                       }
-                    }
-      )
-      .def("setminm", // TODO bound check
-           (int (Sweeps::*)(int, int)) &Sweeps::setminm)
+                    })
       .def_property("maxm",
-        [](Sweeps const & self) -> std::vector<int> {
-          std::vector<int> res;
-          // TODO: check 0-based or 1-based.
-          for (int i = 0, ns = self.nsweep() ; i < ns ; ++i) {
-            res.push_back(self.maxm(i));
-          }
-          return res;
-        },
-        [](Sweeps & self, std::vector<int> const & maxm) {
-          int curMaxM = 1;
-          for (int i = 0, ns = self.nsweep() ; i < ns ; ++i) {
-            if (i < maxm.size()) { curMaxM = maxm[i]; }
-            if (curMaxM > 0) { self.setmaxm(i, curMaxM); }
-            // TODO: document : set only positive
-          }
-        }
-      )
-      .def("setmaxm", // TODO bound check
-           (int (Sweeps::*)(int, int)) &Sweeps::setmaxm)
-          // TODO: bound check
-      .def("__repr__", [](Sweeps const & obj) { std::stringstream ss; ss << obj; return ss.str(); })
+                    [](Sweeps const & self) -> std::vector<int> {
+                      std::vector<int> res;
+                      for (int i = 0, ns = self.nsweep() ; i < ns ; ++i) {
+                        res.push_back(self.maxm(i+1));
+                      }
+                      return res;
+                    },
+                    [](Sweeps & self, py::object obj) { // Overloading (list vs single Real)
+                      if (py::isinstance<py::list>(obj)) {
+                        py::list lst(obj);
+                        int v = 1;
+                        for (int i = 0, ns = self.nsweep() ; i < ns ; ++i) {
+                          if (i < py::len(lst)) { v = lst[i].cast<int>(); }
+                          self.setmaxm(i+1, v);
+                        }
+                      } else if (py::isinstance<py::int_>(obj)) {
+                        int v = obj.cast<int>();
+                        for (int i = 0, ns = self.nsweep() ; i < ns ; ++i) {
+                          self.setmaxm(i+1, v);
+                        }
+                      } else {
+                        throw std::domain_error("Unsupported type");
+                      }
+                    })
+      .def_property("niter",
+                    [](Sweeps const & self) -> std::vector<int> {
+                      std::vector<int> res;
+                      for (int i = 0, ns = self.nsweep() ; i < ns ; ++i) {
+                        res.push_back(self.niter(i+1));
+                      }
+                      return res;
+                    },
+                    [](Sweeps & self, py::object obj) { // Overloading (list vs single int)
+                      if (py::isinstance<py::list>(obj)) {
+                        py::list lst(obj);
+                        int v = 1;
+                        for (int i = 0, ns = self.nsweep() ; i < ns ; ++i) {
+                          if (i < py::len(lst)) { v = lst[i].cast<int>(); }
+                          self.setniter(i+1, v);
+                        }
+                      } else if (py::isinstance<py::int_>(obj)) {
+                        int v = obj.cast<int>();
+                        for (int i = 0, ns = self.nsweep() ; i < ns ; ++i) {
+                          self.setniter(i+1, v);
+                        }
+                      } else {
+                        throw std::domain_error("Unsupported type");
+                      }
+                    })
       .def_property("cutoff",
-          [](Sweeps const & self) -> std::vector<Real> {
-            std::vector<Real> res;
-            for (int i = 0, ns = self.nsweep() ; i < ns ; ++i) {
-              res.push_back(self.cutoff(i));
-            }
-            return res;
-          },
-          [](Sweeps & self, py::object obj) { // Overloading (list vs single Real)
-            if (py::isinstance<py::list>(obj)) {
-              if (py::list(obj).size() != self.nsweep()) {
-                throw std::length_error("Length of the list does not match the number of sweeps");
-              }
-              int i = 0;
-              for (auto const & item : py::list(obj)) {
-                Real r = item.cast<Real>(); // this does type check
-                self.setcutoff(i, r);
-                ++i;
-              }
-            } else if (py::isinstance<py::float_>(obj)) {
-              Real v = obj.cast<Real>();
-              for (int i = 0, ns = self.nsweep() ; i < ns ; ++i) {
-                self.setcutoff(i, v);
-              }
-            } else {
-              throw std::domain_error("Unsupported type");
-            }
-          }
-      )
-    // TODO noise (peculiar behavior with single argument)
-    // TODO niter (peculiar behavior with single argument)
-    // TODO read
-    // TODO write
+                    [](Sweeps const & self) -> std::vector<Real> {
+                      std::vector<Real> res;
+                      for (int i = 0, ns = self.nsweep() ; i < ns ; ++i) {
+                        res.push_back(self.cutoff(i+1));
+                      }
+                      return res;
+                      },
+                    [](Sweeps & self, py::object obj) { // Overloading (list vs single Real)
+                      if (py::isinstance<py::list>(obj)) {
+                        py::list lst(obj);
+                        Real v = 0;
+                        for (int i = 0, ns = self.nsweep() ; i < ns ; ++i) {
+                          if (i < py::len(lst)) { v = lst[i].cast<Real>(); }
+                          self.setcutoff(i+1, v);
+                        }
+                      } else if (py::isinstance<py::float_>(obj)) {
+                        int v = obj.cast<Real>();
+                        for (int i = 0, ns = self.nsweep() ; i < ns ; ++i) {
+                          self.setcutoff(i+1, v);
+                        }
+                      } else {
+                        throw std::domain_error("Unsupported type");
+                      }
+                    })
+      .def_property("noise",
+                    [](Sweeps const & self) -> std::vector<Real> {
+                      std::vector<Real> res;
+                      for (int i = 0, ns = self.nsweep() ; i < ns ; ++i) {
+                        res.push_back(self.noise(i+1));
+                      }
+                      return res;
+                    },
+                    [](Sweeps & self, py::object obj) { // Overloading (list vs single Real)
+                      if (py::isinstance<py::list>(obj)) {
+                        py::list lst(obj);
+                        Real v = 0;
+                        for (int i = 0, ns = self.nsweep() ; i < ns ; ++i) {
+                          if (i < py::len(lst)) { v = lst[i].cast<Real>(); }
+                          self.setnoise(i+1, v);
+                        }
+                      } else if (py::isinstance<py::float_>(obj)) {
+                        Real v = obj.cast<Real>();
+                        for (int i = 0, ns = self.nsweep() ; i < ns ; ++i) {
+                          self.setnoise(i+1, v);
+                        }
+                      } else {
+                        throw std::domain_error("Unsupported type");
+                      }
+                    })
+      .def("setminm", // Bound check done by std::vector::at
+           (void (Sweeps::*)(int, int)) &Sweeps::setminm)
+      .def("setmaxm",
+           (void (Sweeps::*)(int, int)) &Sweeps::setmaxm)
+      .def("setniter",
+           (void (Sweeps::*)(int, int)) &Sweeps::setniter)
+      .def("setcutoff",
+           (void (Sweeps::*)(int, Real)) &Sweeps::setcutoff)
+      .def("setnoise",
+           (void (Sweeps::*)(int, Real)) &Sweeps::setnoise)
+      .def("__repr__", [](Sweeps const & obj) { std::stringstream ss; ss << std::scientific << obj; return ss.str(); })
+      .def("read", &Sweeps::read)
+      .def("write", &Sweeps::write)
   ;
 }
 
