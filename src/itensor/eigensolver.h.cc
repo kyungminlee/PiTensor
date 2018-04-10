@@ -1,5 +1,8 @@
 #include "../pitensor.h"
 #include "itensor/eigensolver.h"
+#include "itensor/mps/mpo.h"
+#include "itensor/mps/localmpo.h"
+
 namespace py = pybind11;
 using namespace itensor;
 
