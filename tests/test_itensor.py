@@ -4,13 +4,7 @@ import math
 
 class PiTensorTest_ITensor(unittest.TestCase):
     def test(self):
-        self.testIndex()
         self.testITensor()
-
-    def testIndex(self):
-        i = pitensor.Index("I", 3)
-        s = str(i)
-        self.assertTrue(s.startswith('(I,3'))
 
     def testITensor(self):
         i = pitensor.Index("I", 3)
@@ -24,6 +18,11 @@ class PiTensorTest_ITensor(unittest.TestCase):
 
         self.assertTrue(math.isclose(pitensor.norm(T), math.sqrt(12.0), rel_tol=1E-6))
         self.assertTrue(math.isclose(pitensor.norm(S), math.sqrt(12.0), rel_tol=1E-6))
+
+
+        j2 = pitensor.findindex(T, lambda x: x.name == 'J')
+        self.assertEqual(j, j2)
+        
 
 if __name__=='__main__':
     unittest.main()
