@@ -8,6 +8,25 @@ using namespace itensor;
 
 static inline
 auto
+initSpinTwo(pybind11::module& module)
+{
+  using Type = SpinTwo;
+  py::class_<SpinTwo, SiteSet> type(module, "SpinTwo");
+
+  type.def(py::init<>());
+  type.def(py::init<int, Args const&>(),
+           py::arg("N"),
+           py::arg("args")=Args::global());
+
+  // TODO: how should I treat istream?
+  type
+      .def("read", &Type::read)
+      ;
+  return type;
+}
+
+static inline
+auto
 initSpinTwoSite(pybind11::module& module)
 {
   using Type = SpinTwoSite;
@@ -29,6 +48,6 @@ initSpinTwoSite(pybind11::module& module)
 
 void pitensor::mps::sites::spintwo(pybind11::module& module)
 {
-  py::class_<SpinTwo, SiteSet> typeSpinTwo(module, "SpinTwo");
+  auto typeSpinTwo = initSpinTwo(module);
   auto typeSpinTwoSite = initSpinTwoSite(module);
 }
