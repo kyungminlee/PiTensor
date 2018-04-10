@@ -14,28 +14,9 @@ initIndex(pybind11::module& module)
       .def(py::init<std::string const &, long, IndexType, int>(),
            "Constructor",
            py::arg("name"),
-           py::arg("m") = 1,
-           py::arg("it") = Link,
-           py::arg("primelev") = 0)
-      .def_property_readonly("m", &Index::m)
-      .def("primeLevel",
-           py::overload_cast<>(&Index::primeLevel, py::const_))
-      .def("primeLevel",
-           py::overload_cast<int>(&Index::primeLevel))
-      .def_property_readonly("type",&Index::type)
-      .def_property_readonly("name", &Index::name)
-      .def_property_readonly("rawname", &Index::rawname)
-      .def_property_readonly("id", &Index::id)
-      .def("__bool__",
-           [](const Index& index) { return static_cast<bool>(index); } )
-      .def("__int__",
-           [](const Index& index) { return static_cast<long>(index); } )
-      .def("__index__",
-           [](const Index& index) { return static_cast<size_t>(index); } )
-      .def("dir",
-           py::overload_cast<>(&Index::dir, py::const_))
-      .def("dir",
-           py::overload_cast<Arrow>(&Index::dir, py::const_))
+           py::arg("m")=1,
+           py::arg("it")=Link,
+           py::arg("primelev")=0)
       .def("prime",
            py::overload_cast<int>(&Index::prime),
            "Increase primelevel",
@@ -58,23 +39,49 @@ initIndex(pybind11::module& module)
       .def("noprimeEquals",
            &Index::noprimeEquals,
            "Check if other Index is a copy of this, ignoring primeLevel")
+      .def("dag", &Index::dag)
+    // TODO read write
+      //.def("write", &Index::write)
+      //.def("read", &Index::read)
+  ;
+
+  type
+      .def_property_readonly("size", &Index::size)
+      .def_property_readonly("m", &Index::m)
+      .def_property_readonly("type",&Index::type)
+      .def_property_readonly("name", &Index::name)
+      .def_property_readonly("rawname", &Index::rawname)
+      .def_property_readonly("id", &Index::id)
+      .def("dir", py::overload_cast<>(&Index::dir, py::const_))
+      .def_property("primeLevel",
+                    py::overload_cast<>(&Index::primeLevel, py::const_),
+                    py::overload_cast<int>(&Index::primeLevel))
+
+    //.def("dir", // TODO: why is this here?
+  //    py::overload_cast<Arrow>(&Index::dir, py::const_))
+  ;
+
+  type
+      .def(py::self == py::self)
+      .def(py::self != py::self)
+      .def(py::self < py::self)
+      .def(py::self > py::self)
+      .def(py::self == IndexVal())
+  ;
+
+  type
+      .def("__bool__",
+           [](const Index& index) { return static_cast<bool>(index); } )
       .def("__call__",
            [](Index const & obj, long val) -> IndexVal { return obj(val); },
            "Return an IndexVal with specific value")
       .def("__getitem__",
            [](Index const & obj, int plev) -> Index { return obj[plev]; },
            "Return copy of this Index with primelevel plev")
-      .def("dag",
-           &Index::dag)
-      .def_property_readonly("size",
-                             &Index::size)
-      .def("write", &Index::write)
-      .def("read", &Index::read)
-      .def(py::self == py::self)
-      .def(py::self != py::self)
-      .def(py::self < py::self)
-      .def(py::self > py::self)
-      .def(py::self == IndexVal())
+      .def("__int__",
+           [](const Index& index) { return static_cast<long>(index); } )
+      .def("__index__",
+           [](const Index& index) { return static_cast<size_t>(index); } )
       .def("__repr__",
            [](Index const & obj) -> std::string { std::stringstream ss; ss << std::scientific << obj; return ss.str(); })
   ;
