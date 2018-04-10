@@ -96,11 +96,65 @@ auto initAutoMPO(pybind11::module& module)
       .def("terms", &AutoMPO::terms)
       .def("toMPO", [](AutoMPO const & self) -> MPO { return MPO(self);})
       .def("toIQMPO", [](AutoMPO const & self) -> IQMPO { return IQMPO(self);})
-    // TODO Accumulator
       .def("add", &AutoMPO::add)
       .def("reset", &AutoMPO::reset)
       .def("__repr__", [](AutoMPO const & obj) { std::stringstream ss; ss << std::scientific << obj; return ss.str(); })
   ;
+
+  // TODO: Decision
+  // Using += iterable instead of Accumulator. Is this a good idea?
+  type
+      .def("__iadd__",
+           [](AutoMPO & ampo, HTerm const & hterm) { ampo.add(hterm); return ampo; }
+      )
+      .def("__iadd__",
+           [](AutoMPO & ampo, py::iterable obj) {
+        Complex coeff = 1.0;
+        HTerm hterm;
+        enum class State {New, Op} state = State::New;
+        std::string op;
+        for (auto const & item : obj) {
+          if (py::isinstance<py::float_>(item)) {
+            coeff *= item.cast<Real>();
+          } else if (py::isinstance<py::class_<Complex>>(item)) { // TODO: pybind11 does not implement complex type
+            coeff *= item.cast<Complex>();
+          } else if (py::isinstance<py::str>(item)) {
+            switch(state) {
+              case State::New:
+                op = item.cast<std::string>();
+                state = State::Op;
+                break;
+              case State::Op:
+                throw std::domain_error("Invalid input to AutoMPO (two strings in a row?)");
+                break;
+            }
+          } else if (py::isinstance<py::int_>(item)) {
+            auto i = item.cast<int>();
+            switch(state) {
+              case State::New:
+                hterm *= static_cast<Real>(i);
+                break;
+              case State::Op:
+                hterm.add(op, i);
+                state = State::New;
+                op = "";
+                break;
+            }
+          } else {
+            throw std::domain_error("Invalid input to AutoMPO (unsupported type)");
+          }
+        }
+
+        if (!hterm) {
+          throw std::domain_error("Invalid input to AutoMPO (no operators)");
+        }
+        hterm *= coeff;
+        ampo.add(hterm);
+        return ampo;
+      }
+      )
+  ;
+
   return type;
 }
 
