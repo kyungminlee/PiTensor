@@ -2,6 +2,10 @@
 #define PITENSOR_LIBRARY_H
 
 #include <cmath>
+#include <functional>
+#include <streambuf>
+#include <fstream>
+#include <sstream>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
