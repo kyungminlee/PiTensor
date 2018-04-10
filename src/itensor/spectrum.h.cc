@@ -17,8 +17,7 @@ void pitensor::spectrum(pybind11::module& module)
         .def("qn", &Spectrum::qn)
         .def("qns", &Spectrum::qns)
         .def("size", &Spectrum::size)
-        .def("__repr__",
-             [](Spectrum const & obj) -> std::string { std::stringstream ss; ss << obj; return ss.str(); })
+        .def("__repr__", [](Spectrum const & obj) -> std::string { std::stringstream ss; ss << std::scientific << obj; return ss.str(); })
     ;
 
   }

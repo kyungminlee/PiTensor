@@ -24,8 +24,7 @@ void pitensor::qn(pybind11::module& module) {
         .def("val", &QNVal::val)
         .def("set", &QNVal::set)
         .def(-py::self) //TODO: Design flaw
-
-        ;
+    ;
   }
 
   {

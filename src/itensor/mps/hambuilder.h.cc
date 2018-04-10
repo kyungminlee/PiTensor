@@ -71,7 +71,12 @@ initHamBuilder(pybind11::module& module, const char* typeName)
   type
       .def(py::self *= Real())
       .def(py::self *= Complex())
+      .def(py::self * Real())
+      .def(Real() * py::self)
+      .def(py::self * Complex())
+      .def(Complex() * py::self)
     // TODO operators
+    #if 0
       .def("__mul__", [](HamBuilder<Tensor> const & hb, Real x) {
         return hb * x;
       })
@@ -84,6 +89,7 @@ initHamBuilder(pybind11::module& module, const char* typeName)
       .def("__mul__", [](Complex x, HamBuilder<Tensor> const & hb) {
         return x * hb;
       })
+    #endif
   ;
   return type;
 }

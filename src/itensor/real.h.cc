@@ -13,9 +13,12 @@ void pitensor::real(pybind11::module& module)
   py::class_<LogNum> type(module, "LogNum");
 
   type
-    .def(py::init<>())
-    .def(py::init<Real>())
-    .def(py::init<Real, int>())
+      .def(py::init<>())
+      .def(py::init<Real>())
+      .def(py::init<Real, int>(), py::arg("lognum"), py::arg("sign"))
+  ;
+
+  type
       .def("logNum", &LogNum::logNum)
       .def("sign", &LogNum::sign)
       .def("isZero", &LogNum::isZero)
@@ -25,11 +28,18 @@ void pitensor::real(pybind11::module& module)
       .def("isTooSmallForReal", &LogNum::isTooSmallForReal)
       .def("real", &LogNum::real)
       .def("real0", &LogNum::real0)
+      .def("approxEquals", &LogNum::approxEquals)
+      .def("negate", &LogNum::negate)
+      .def("swap", &LogNum::swap)
+      .def("magnitudeLessThan", &LogNum::magnitudeLessThan)
+      .def("pow", &LogNum::pow)
+  ;
+  // TODO read write
+
+  type
       .def(py::self += py::self)
       .def(py::self == py::self)
       .def(py::self != py::self)
-      .def("approxEquals", &LogNum::approxEquals)
-      .def("negate", &LogNum::negate)
       .def(py::self *= py::self)
       .def(py::self *= Real())
       .def(py::self /= py::self)
@@ -43,16 +53,14 @@ void pitensor::real(pybind11::module& module)
       .def(py::self >= py::self)
       .def(py::self * Real())
       .def(Real() * py::self)
-      .def("swap", &LogNum::swap)
-      .def("magnitudeLessThan", &LogNum::magnitudeLessThan)
-      .def("pow", &LogNum::pow)
+  ;
+
+  type
+      .def("__repr__", [](LogNum const & self) { std::stringstream ss; ss << std::scientific << self; ss.str(); })
   ;
 
   module
-    .def("sqrt",
-         (LogNum (*)(LogNum)) &sqrt )
-  ;
-  type
-      .def("__repr__", [](LogNum const & self) { std::stringstream ss; ss<<self; ss.str(); })
+      .def("sqrt", (LogNum (*)(LogNum)) &sqrt )
+      .def("isnan",[](LogNum const & i) -> bool { return isnan(i); })
   ;
 }

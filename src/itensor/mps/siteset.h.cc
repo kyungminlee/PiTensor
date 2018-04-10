@@ -7,6 +7,7 @@ static inline
 auto
 initSiteSet(pybind11::module& module)
 {
+  using Type = SiteSet;
   using String = SiteSet::String;
   py::class_<SiteSet> type(module, "SiteSet");
 
@@ -16,57 +17,67 @@ initSiteSet(pybind11::module& module)
 
   type
       .def("__bool__", [](SiteSet const & self) { return static_cast<bool>(self); })
-      .def("N", &SiteSet::N)
+      .def("__getitem__", [](SiteSet const & self, int i) {
+                            if (i <= 0 || i > self.N()) {
+                              throw std::invalid_argument("SiteSet::operator(i) out of bounds");
+                            }
+                            return self(i);
+                          })
       .def("__call__", [](SiteSet const & self, int i) {
-        // TODO check for bound
-        if (i <= 0 || i > self.N()) {
-          throw ITError("SiteSet::operator(i) out of bounds");
-        }
-        return self(i);
-      })
+                          // TODO check for bound
+                          if (i <= 0 || i > self.N()) {
+                            throw std::invalid_argument("SiteSet::operator(i) out of bounds");
+                          }
+                          return self(i);
+                        })
       .def("__call__", [](SiteSet const & self,
                           int i,
-                          std::string const & state) {
-        // TODO check for bound
-        if (i <= 0 || i > self.N()) {
-          throw ITError("SiteSet::operator(i) out of bounds");
-        }
-        return self(i, state);
-      })
+                          std::string const & state) { // TODO check for bound
+                         if (i <= 0 || i > self.N()) {
+                           throw std::invalid_argument("SiteSet::operator(i) out of bounds");
+                         }
+                         return self(i, state);
+                       })
+      .def("__repr__", [](Type const & obj) { std::stringstream ss; ss << std::scientific << obj; return ss.str(); })
+  ;
+
+  type
+      .def("N", &SiteSet::N)
       .def("op", [](SiteSet const & self,
                     String const & opname,
                     int i, Args const & args) {
-                   // TODO bound checking
-                   return self.op(opname, i, args);
-                 },
-           py::arg("opname"),
-           py::arg("i"),
-           py::arg("args") = Args::global())
-      // TODO read, write
+                    return self.op(opname, i, args);
+                    // TODO bound checking
+                  },
+                  py::arg("opname"),
+                  py::arg("i"),
+                  py::arg("args")=Args::global()
+                  )
       .def("si", [](SiteSet const & self, int i) {
-        if (i <= 0 || i > self.N()) { // TODO check for bound
-          throw ITError("SiteSet::operator(i) out of bounds");
-        }
-        return self.si(i);
-      })
+                   if (i <= 0 || i > self.N()) { // TODO check for bound
+                     throw std::invalid_argument("SiteSet::si out of bounds");
+                   }
+                   return self.si(i);
+                 })
       .def("siP", [](SiteSet const & self, int i) {
-        if (i <= 0 || i > self.N()) { // TODO check for bound
-          throw ITError("SiteSet::operator(i) out of bounds");
-        }
-        return self.siP(i);
-      })
+                    if (i <= 0 || i > self.N()) { // TODO check for bound
+                      throw std::invalid_argument("SiteSet::siP out of bounds");
+                    }
+                    return self.siP(i);
+                  })
       .def("st", [](SiteSet const & self, int i, String const & state) {
-        if (i <= 0 || i > self.N()) { // TODO check for bound
-          throw ITError("SiteSet::operator(i) out of bounds");
-        }
-        return self.st(i, state);
-      })
+                   if (i <= 0 || i > self.N()) { // TODO check for bound
+                     throw std::invalid_argument("SiteSet::st out of bounds");
+                   }
+                   return self.st(i, state);
+                 })
       .def("stP", [](SiteSet const & self, int i, String const & state) {
-        if (i <= 0 || i > self.N()) { // TODO check for bound
-          throw ITError("SiteSet::operator(i) out of bounds");
-        }
-        return self.stP(i, state);
-      })
+                    if (i <= 0 || i > self.N()) { // TODO check for bound
+                      throw std::invalid_argument("SiteSet::stP out of bounds");
+                    }
+                    return self.stP(i, state);
+                  })
+      // TODO read, write
   ;
 
   return type;

@@ -7,7 +7,6 @@ using namespace itensor;
 void static inline
 initIQIndex(pybind11::module& module)
 {
-
   py::class_<IQIndex, Index> type(module, "IQIndex");
 
   type.def(py::init<>(), "Constructor");
@@ -108,7 +107,9 @@ initIQIndex(pybind11::module& module)
       py::arg("i5"), py::arg("q5"),
       py::arg("i6"), py::arg("q6"),
       py::arg("i7"), py::arg("q7"),
-      py::arg("dir") = Out);
+      py::arg("dir")=Out)
+  ;
+
 
   type
       .def("nblock", &IQIndex::nblock)
@@ -132,7 +133,6 @@ initIQIndexVal(pybind11::module& module)
   type
       .def_readwrite("index", &IQIndexVal::index)
       .def_readwrite("val", &IQIndexVal::val)
-
   ;
 
   type
@@ -176,10 +176,7 @@ initIQIndexVal(pybind11::module& module)
       .def(py::self != IQIndex())
       //.def(IQIndex() == py::self)
       //.def(IQIndex() != py::self)
-      .def("__repr__",
-           [](IQIndex const & obj) -> std::string {
-             std::stringstream ss; ss << obj; return ss.str();
-           })
+      .def("__repr__", [](IQIndex const & obj) -> std::string { std::stringstream ss; ss << std::scientific << obj; return ss.str(); })
   ;
 
 
@@ -191,17 +188,17 @@ initIQIndexVal(pybind11::module& module)
            (IndexQN (*)(IndexQN)) &dag)
       .def("dag",
            (IQIndexVal (*)(IQIndexVal)) &dag)
-    .def("hasindex", (bool (*)(IQIndex const &, Index const &)) &hasindex)
-    .def("findindex", (long (*)(IQIndex const &, Index const &)) &findindex)
-    .def("offset", (long (*)(IQIndex const &, Index const&)) &offset)
-    .def("qn", (QN (*)(IQIndex const &, Index const &)) &qn)
-    .def("findByQN", (Index (*)(IQIndex const &, QN const &))&findByQN)
-    .def("sim",
-         (IQIndex (*)(IQIndex const &, int)) &sim,
-         py::arg("I"),
-         py::arg("plev")=0)
-    .def("showm",
-         (std::string (*)(IQIndex const &)) &showm)
+      .def("hasindex", (bool (*)(IQIndex const &, Index const &)) &hasindex)
+      .def("findindex", (long (*)(IQIndex const &, Index const &)) &findindex)
+      .def("offset", (long (*)(IQIndex const &, Index const&)) &offset)
+      .def("qn", (QN (*)(IQIndex const &, Index const &)) &qn)
+      .def("findByQN", (Index (*)(IQIndex const &, QN const &))&findByQN)
+      .def("sim",
+           (IQIndex (*)(IQIndex const &, int)) &sim,
+           py::arg("I"),
+           py::arg("plev")=0)
+      .def("showm",
+           (std::string (*)(IQIndex const &)) &showm)
 
 
       .def("prime",

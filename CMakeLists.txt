@@ -138,6 +138,7 @@ set(PITENSOR_DEPENDENCY_DIR "${CMAKE_BINARY_DIR}/deps")
 target_include_directories(pitensor PUBLIC "${PITENSOR_DEPENDENCY_DIR}/ITensor")
 
 if(APPLE)
+    message(STATUS "Building for macOS")
     # https://stackoverflow.com/questions/26185978/macos-wchar-h-file-not-found
     set(ITENSOR_PLATFORM macos)
     set(ITENSOR_BLAS_LAPACK_LIBFLAGS "-framework Accelerate")
@@ -151,7 +152,8 @@ if(APPLE)
             debug "${ITENSOR_LIB_DEBUG}"
             general "${ACCELERATE_LIBRARY}"
     )
-elseif(MSYS AND MINGW)
+elseif(MINGW)
+    message(STATUS "Building for MinGW")
     set(CMAKE_AR "gcc-ar")
     set(CMAKE_RANLIB "gcc-ranlib")
 
@@ -211,6 +213,7 @@ elseif(MSYS AND MINGW)
 
     add_dependencies(pitensor DllBinaries)
 elseif(UNIX)
+    message(STATUS "Building for Linux")
     set(CMAKE_AR "gcc-ar")
     set(CMAKE_RANLIB "gcc-ranlib")
 
@@ -222,8 +225,16 @@ elseif(UNIX)
     set(ITENSOR_PLATFORM lapack)
     set(ITENSOR_BLAS_LAPACK_LIBFLAGS "${LAPACK_LIBRARY} ${BLAS_LIBRARY} -lpthread")
     set(ITENSOR_BLAS_LAPACK_INCLUDEFLAGS "-I${BLAS_LAPACK_ROOT}/include")
-    set(ITENSOR_LIB_OPTIMIZED "${PITENSOR_DEPENDENCY_DIR}/ITensor/lib/libitensor.a")
-    set(ITENSOR_LIB_DEBUG "${PITENSOR_DEPENDENCY_DIR}/ITensor/lib/libitensor-g.a")
+
+    #find_library(ITENSOR_LIB_OPTIMIZED NAMES itensor HINTS "${PITENSOR_DEPENDENCY_DIR}/ITensor/lib")
+    #find_library(ITENSOR_LIB_DEBUG NAMES itensor-g HINTS "${PITENSOR_DEPENDENCY_DIR}/ITensor/lib")
+
+    #set(ITENSOR_LIB_OPTIMIZED "${PITENSOR_DEPENDENCY_DIR}/ITensor/lib/libitensor.a")
+    #set(ITENSOR_LIB_DEBUG "${PITENSOR_DEPENDENCY_DIR}/ITensor/lib/libitensor-g.a")
+
+    set(ITENSOR_LIB_OPTIMIZED "${PITENSOR_DEPENDENCY_DIR}/ITensor/lib/libitensor.so")
+    set(ITENSOR_LIB_DEBUG "${PITENSOR_DEPENDENCY_DIR}/ITensor/lib/libitensor-g.so")
+
     target_link_libraries(pitensor
         PRIVATE
             optimized "${ITENSOR_LIB_OPTIMIZED}"
@@ -253,7 +264,7 @@ BLAS_LAPACK_LIBFLAGS=${ITENSOR_BLAS_LAPACK_LIBFLAGS}
 BLAS_LAPACK_INCLUDEFLAGS=${ITENSOR_BLAS_LAPACK_INCLUDEFLAGS}
 OPTIMIZATIONS=-DNDEBUG -Wall ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}
 DEBUGFLAGS=-DDEBUG -Wall -pedantic ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG}
-ITENSOR_MAKE_DYLIB=0
+ITENSOR_MAKE_DYLIB=1
 PREFIX=$(THIS_DIR)
 ITENSOR_LIBDIR=$(PREFIX)/lib
 ITENSOR_INCLUDEDIR=$(PREFIX)
@@ -271,6 +282,15 @@ CCFLAGS=-I. $(ITENSOR_INCLUDEFLAGS) $(OPTIMIZATIONS) -Wno-unused-variable
 CCGFLAGS=-I. $(ITENSOR_INCLUDEFLAGS) $(DEBUGFLAGS)
 LIBFLAGS=-L$(ITENSOR_LIBDIR) $(ITENSOR_LIBFLAGS)
 LIBGFLAGS=-L$(ITENSOR_LIBDIR) $(ITENSOR_LIBGFLAGS)
+
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+  DYLIB_EXT ?= dylib
+  DYLIB_FLAGS ?= -dynamiclib
+else
+  DYLIB_EXT ?= so
+  DYLIB_FLAGS ?= -shared
+endif
 ")
 
 include(ExternalProject)

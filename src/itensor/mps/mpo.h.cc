@@ -15,10 +15,14 @@ initMPOt(pybind11::module& module, const char* typeName)
       .def(py::init<>())
       .def(py::init<SiteSet const&, Real>(),
            py::arg("sites"),
-           py::arg("refNorm") = DefaultLogRefScale) // TODO: variable name mismatch with ITensor
+           py::arg("refNorm")=DefaultLogRefScale) // TODO: variable name mismatch with ITensor
   ;
+
   type
       .def("__bool__", [](mpo_type const & self) { return static_cast<bool>(self); })
+  ;
+
+  type
       .def("logRefNorm", &mpo_type::logRefNorm)
       .def("plusEq", &mpo_type::plusEq)
       .def("toMPO", &mpo_type::toMPO)
@@ -86,9 +90,9 @@ initMPOt(pybind11::module& module, const char* typeName)
 #endif
       .def("overlapC",
            (Complex (*)(mps_type const &,
-                     mpo_type const &,
-                     mpo_type const &,
-                     mps_type const &)) &overlapC)
+                        mpo_type const &,
+                        mpo_type const &,
+                        mps_type const &)) &overlapC)
       .def("nmultMPO",
            (void (*)(mpo_type const &,
                      mpo_type const &,
@@ -152,19 +156,95 @@ initMPOt(pybind11::module& module, const char* typeName)
            py::arg("args") = Args::global()
            // TODO: ITensor does not have default argument here.
       )
-    // TODO fitApplyMPO
-    // TODO fitApplyMPO
-    // TODO fitApplyMPO
-    // TODO fitApplyMPO
-    // TODO fitApplyMPO
-    // TODO expH
-    // TODO applyExpH
-    // TODO putMPOLinks
-    // TODO putMPOLinks
-      // TODO exactApplyMPO
-      // TODO exactApplyMPO
-      .def("__repr__", [](mpo_type const & obj) { std::stringstream ss; ss << obj; return ss.str(); })
+      .def("fitApplyMPO",
+           (Real (*)(mps_type const &,
+                     Real,
+                     mps_type const &,
+                     mpo_type const &,
+                     mps_type &,
+                     Args const &
+                     )) &fitApplyMPO,
+            py::arg("psiA"),
+            py::arg("mpofac"),
+            py::arg("psiB"),
+            py::arg("H"),
+            py::arg("res"),
+            py::arg("args") = Args::global()
+      )
+      .def("fitApplyMPO",
+           (Real (*)(Real,
+                     mps_type const &,
+                     Real,
+                     mps_type const &,
+                     mpo_type const &,
+                     mps_type &,
+                     Args const &
+           )) &fitApplyMPO,
+           py::arg("mpsfac"),
+           py::arg("psiA"),
+           py::arg("mpofac"),
+           py::arg("psiB"),
+           py::arg("H"),
+           py::arg("res"),
+           py::arg("args") = Args::global()
+      )
+      .def("expH",
+           (void (*)(mpo_type const &,
+                     mpo_type &,
+                     Real,
+                     Real,
+                     Real,
+                     int,
+                     Args // TODO: report to ITensor
+           )) &expH,
+           py::arg("H"),
+           py::arg("K"),
+           py::arg("tau"),
+           py::arg("Etot"),
+           py::arg("Kcutoff"),
+           py::arg("ndoub"),
+           py::arg("args") = Args::global()
+      )
+      .def("applyExpH",
+           (void (*)(mps_type const &,
+                     mpo_type const &,
+                     Real,
+                     mps_type &,
+                     Args const &
+           )) &applyExpH,
+           py::arg("psi"),
+           py::arg("H"),
+           py::arg("tau"),
+           py::arg("res"),
+           py::arg("args") = Args::global()
+      )
+          // TODO putMPOLinks
+          // TODO putMPOLinks
+      .def("exactApplyMPO",
+           (mps_type (*)(mps_type const &,
+                         mpo_type const &,
+                         Args const &
+           )) &exactApplyMPO,
+           py::arg("x"),
+           py::arg("K"),
+           py::arg("args") = Args::global()
+      )
+      .def("exactApplyMPO",
+           (void (*)(mps_type const &,
+                     mpo_type const &,
+                     mps_type &,
+                     Args const &
+           )) &exactApplyMPO,
+           py::arg("x"),
+           py::arg("K"),
+           py::arg("res"),
+           py::arg("args") = Args::global()
+      )
+      .def("__repr__", [](mpo_type const & obj) { std::stringstream ss; ss << std::scientific << obj; return ss.str(); })
   ;
+  // TODO: psiHphi
+  // TODO: psiHphiC
+
   return type;
 }
 
