@@ -299,7 +299,6 @@ struct InitializerITensorT {
     ;
 
     // Using IndexType
-
     type
         .def("fill", &itensor_type::fill)
         /*
@@ -396,13 +395,12 @@ struct InitializerITensorT {
           return self;
         })
         .def("mapprime",
-             (itensor_type &(itensor_type::*)(int,
-                                              int,
-                                              IndexType)) &itensor_type::mapprime,
+             (itensor_type &(itensor_type::*)(int, int, IndexType)) &itensor_type::mapprime,
              py::arg("plevold"),
              py::arg("plevnew"),
-             py::arg("type") = All
-        );
+             py::arg("type")=All
+        )
+    ;
 
 #if 0
     type
@@ -954,7 +952,7 @@ struct InitializerITensorT {
              py::arg("A"),
              py::arg("plevold"),
              py::arg("plevnew"),
-             py::arg("type") = All
+             py::arg("type")=All
         )
             // TODO: mapprime with variadic blah
             // TODO: sim
@@ -970,7 +968,7 @@ struct InitializerITensorT {
              (index_type (*)(itensor_type const &, itensor_type const &, IndexType)) &commonIndex,
              py::arg("A"),
              py::arg("B"),
-             py::arg("t") = All)
+             py::arg("t")=All)
         .def("uniqueIndex",
              (index_type (*)(itensor_type const &, itensor_type const &, IndexType)) &uniqueIndex,
              py::arg("A"),
@@ -981,7 +979,7 @@ struct InitializerITensorT {
              py::arg("T"),
              py::arg("plev1"),
              py::arg("plev2"),
-             py::arg("type") = All)
+             py::arg("type")=All)
             // TODO: apply
         .def("realPart",
              (itensor_type (*)(itensor_type)) &realPart)
@@ -1000,7 +998,7 @@ struct InitializerITensorT {
     .def("randomize",
          (void (*)(itensor_type &, Args const &)) &randomize,
          py::arg("T"),
-         py::arg("args") = Args::global())
+         py::arg("args")=Args::global())
         .def("random",
              (itensor_type (*)(itensor_type, Args const &)) &random,
              py::arg("T"),
@@ -1195,5 +1193,6 @@ void static initDiagTensor(pybind11::module& module) {
                        Index const &,
                        Index const &,
                        Index const &,
-                       Index const &)) &diagTensor);
+                       Index const &)) &diagTensor)
+  ;
 }
