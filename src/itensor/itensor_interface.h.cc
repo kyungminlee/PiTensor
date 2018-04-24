@@ -6,10 +6,11 @@
 namespace py = pybind11;
 using namespace itensor;
 
+#if 0
 template <typename Container>
 void static inline
 initDiagTensor(pybind11::module& module);
-
+#endif
 
 template <typename IndexT>
 void static inline
@@ -36,9 +37,11 @@ struct InitializerITensorT {
     initRealCplx();
     initPrime();
     initFunction();
+    initSpecialization();
   }
 
   void initConstructor() {
+#if 0
     pitensor::recursiveConstructor<
         py::class_<itensor_type>,
         index_type const &,
@@ -52,8 +55,16 @@ struct InitializerITensorT {
         index_type const &,
         index_type const &
     >(type); // includes default constructor
-
+#endif
     type
+        .def(py::init([](py::args args) {
+          for (auto const & arg : args) {
+            if (!py::isinstance<index_type>(arg)) { throw std::domain_error("Argument type should be of index_type"); }
+          }
+          std::vector<index_type> v_args; v_args.reserve(py::len(args));
+          for (auto const & arg : args) { v_args.push_back(arg.cast<index_type>()); }
+          return new itensor_type(std::move(v_args));
+        }))
         .def(py::init<std::vector<index_type> const &>())
             // don't need std::array or initializer list
         .def(py::init<Cplx>())
@@ -215,13 +226,14 @@ struct InitializerITensorT {
   {
     type
         .def("set",
-             (void (itensor_type::*)(Cplx)) &itensor_type::set
-        )
-        .def("set",
              (void (itensor_type::*)(std::vector<indexval_type> const &,
                                      Cplx)) &itensor_type::set
         )
         .def("set",
+             (void (itensor_type::*)(Cplx)) &itensor_type::set
+        )
+#if 1
+        .def("set",
              (void (itensor_type::*)(indexval_type const &,
                                      Cplx const &)) &itensor_type::set)
         .def("set",
@@ -296,6 +308,7 @@ struct InitializerITensorT {
                                      indexval_type const &,
                                      indexval_type const &,
                                      Cplx const &)) &itensor_type::set)
+#endif
     ;
 
     // Using IndexType
@@ -914,9 +927,6 @@ struct InitializerITensorT {
 
   }
 
-
-
-
   void initFunction()
   {
     module
@@ -1014,24 +1024,79 @@ struct InitializerITensorT {
     // TODO multiSiteOps
     ;
   }
+
+  void initSpecialization();
 };
 
 
+void static
+initDiagTensor(pybind11::module& module) {
+  module
+      .def("diagTensor",
+           [](std::vector<Real> const & values,
+              std::vector<Index> const & indices) -> ITensor {
+             if (values.size() < indices.size()) { throw std::domain_error("Small number of values"); }
+             auto is = IndexSet(indices);
+             return ITensor(std::move(is),Diag<Real>(values.begin(),values.end()));
+           })
+      .def("diagTensor",
+           [](std::vector<Cplx> const & values,
+              std::vector<Index> const & indices) -> ITensor {
+             if (values.size() < indices.size()) { throw std::domain_error("Small number of values"); }
+             auto is = IndexSet(indices);
+             return ITensor(std::move(is),Diag<Cplx>(values.begin(),values.end()));
+           })
+  ;
+}
 
-void pitensor::itensor_interface(pybind11::module& module)
+template<>
+void
+InitializerITensorT<Index>::initSpecialization()
 {
-  auto initITensor = InitializerITensorT<Index>(module, "ITensor");
-  auto initIQTensor = InitializerITensorT<IQIndex>(module, "IQTensor");
-
-  auto typeITensor = initITensor.type;
-  auto typeIQTensor = initIQTensor.type;
-
-  typeITensor
+  type
       .def(py::self *= IndexVal())
       .def(py::self * IndexVal())
       .def(IndexVal() * py::self)
+      .def(py::self *= IQIndexVal())
+      .def(py::self * IQIndexVal())
+      .def(IQIndexVal() * py::self)
   ;
 
+  module
+      .def("combiner",
+           [](Index const &i1, py::args args) -> ITensor {
+             for (auto const & arg : args) {
+               if (!py::isinstance<Index>(arg)) { throw std::domain_error("Arguments should be of Index type"); }
+             }
+             std::vector<Index> indices;
+             indices.reserve(1+py::len(args));
+             indices.push_back(i1);
+             for (auto const & arg : args) {
+               indices.push_back(arg.cast<Index>());
+             }
+             return combiner(std::move(indices));
+           })
+      .def("delta",
+           [](Index const &i1, py::args args) -> ITensor {
+             for (auto const & arg : args) {
+               if (!py::isinstance<Index>(arg)) { throw std::domain_error("Arguments should be of Index type"); }
+             }
+             std::vector<Index> indices;
+             indices.reserve(1+py::len(args));
+             indices.push_back(i1);
+             for (auto const & arg : args) {
+               indices.push_back(arg.cast<Index>());
+             }
+             IndexSet indexset(std::move(indices));
+             auto len = minM(indexset);
+             return ITensor(std::move(indexset),DiagReal(len,1.));
+           })
+      .def("combinedIndex",
+           (Index (*)(ITensor const &)) &combinedIndex)
+  ;
+
+
+#if 0
   module
       .def("combiner",
            (ITensor (*)(Index const &)) &combiner)
@@ -1074,8 +1139,7 @@ void pitensor::itensor_interface(pybind11::module& module)
                         Index const &,
                         Index const &,
                         Index const &)) &combiner)
-      .def("combinedIndex",
-           (Index (*)(ITensor const &)) &combinedIndex)
+
       .def("delta",
            (ITensor (*)(Index const &)) &delta)
       .def("delta",
@@ -1111,15 +1175,83 @@ void pitensor::itensor_interface(pybind11::module& module)
                         Index const &,
                         Index const &,
                         Index const &)) &delta)
-      ;
+  ;
+#endif
+}
+
+template <>
+void InitializerITensorT<IQIndex>::initSpecialization()
+{
+  type
+      .def(py::self *= IQIndexVal())
+      .def(py::self * IQIndexVal())
+      .def(IQIndexVal() * py::self)
+      .def(IndexVal() * py::self) //TODO Check Type
+      .def(py::self += ITensor())
+      .def(py::self + ITensor())
+      .def(py::self * ITensor())
+      .def(ITensor() * py::self)
+      .def(py::self * IndexVal())
+      .def(IndexVal() * py::self)
+  ;
+
+  module
+      .def("toITensor", (ITensor (*)(IQTensor const &))&toITensor)
+      .def("div", (QN (*)(IQTensor const &)) &div)
+      .def("combiner",
+           [](IQIndex const &i1, py::args args) -> IQTensor {
+             for (auto const & arg : args) {
+               if (!py::isinstance<IQIndex>(arg)) { throw std::domain_error("Arguments should be of IQIndex type"); }
+             }
+             std::vector<IQIndex> indices;
+             indices.reserve(1+py::len(args));
+             indices.push_back(i1);
+             for (auto const & arg : args) {
+               indices.push_back(arg.cast<IQIndex>());
+             }
+             return combiner(std::move(indices));
+           })
+      .def("delta",
+           [](IQIndex const &i1, py::args args) -> IQTensor {
+             for (auto const & arg : args) {
+               if (!py::isinstance<IQIndex>(arg)) { throw std::domain_error("Arguments should be of IQIndex type"); }
+             }
+             std::vector<IQIndex> indices;
+             indices.reserve(1+py::len(args));
+             indices.push_back(i1);
+             for (auto const & arg : args) { indices.push_back(arg.cast<IQIndex>()); }
+             auto indexset = IQIndexSet(std::move(indices));
+             auto dat = QDiagReal(indexset, 1.0);
+             return IQTensor(std::move(indexset), std::move(dat));
+           })
+    // TODO findIQInd
+    // TODO qn
+    // TODO dir
+    // TODO randomTensor with IQIndVals
+    // TODO mixedIQTensor
+    // TODO typeNameOf
+  ;
+
+  py::implicitly_convertible<IQTensor, ITensor>();
+}
+
+void pitensor::itensor_interface(pybind11::module& module)
+{
+  auto initITensor = InitializerITensorT<Index>(module, "ITensor");
+  auto initIQTensor = InitializerITensorT<IQIndex>(module, "IQTensor");
+
+  auto typeITensor = initITensor.type;
+  auto typeIQTensor = initIQTensor.type;
 
   typeIQTensor
     //TODO specialization for IQTensor
   //  .def('__imul__', )
   ;
 
-  initDiagTensor<std::vector<Real> >(module);
-  initDiagTensor<std::vector<Cplx> >(module);
+  //initDiagTensor<std::vector<Real> >(module);
+  //initDiagTensor<std::vector<Cplx> >(module);
+
+  initDiagTensor(module);
 
   // TODO operator IndexVal * IndexVal
   // TODO IndexVal * Cplx
@@ -1152,12 +1284,14 @@ void static inline
 initRandomTensor(pybind11::module& module)
 {
   module
+      // TODO: Pythonic randomTensor
       .def("randomTensor",
            (ITensorT<IndexT> (*)(IndexSetT<IndexT> const &)) &randomTensor)
   ;
 }
 
 
+#if 0
 template <typename Container>
 void static initDiagTensor(pybind11::module& module) {
   module
@@ -1196,3 +1330,4 @@ void static initDiagTensor(pybind11::module& module) {
                        Index const &)) &diagTensor)
   ;
 }
+#endif
