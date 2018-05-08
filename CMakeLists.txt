@@ -302,7 +302,7 @@ ExternalProject_Add(ITensor_external
     BINARY_DIR   "${PITENSOR_DEPENDENCY_DIR}/ITensor"
     INSTALL_DIR  "${PITENSOR_DEPENDENCY_DIR}/ITensor"
     GIT_REPOSITORY https://github.com/kyungminlee/ITensor.git
-    GIT_TAG pitensor
+    GIT_TAG "pitensor-2.1.1-1"
     UPDATE_COMMAND ""
     PATCH_COMMAND ""
     CONFIGURE_COMMAND "${CMAKE_COMMAND}" -E copy 
