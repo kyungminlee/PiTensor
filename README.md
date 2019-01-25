@@ -7,6 +7,8 @@
 
 PiTensor is a Python wrapper library for [ITensor](https://github.com/ITensor/ITensor.git), a C++ library for implementing tensor network calculations.
 
+*PiTensor is currently at its pre-alpha stage; using PiTensor for any serious task is not recommended.*
+
 ### Installation
 
 ```
@@ -56,7 +58,7 @@ print(V)
 
 ### Contributing
 
-All contributions are welcome
+All contributions are welcome.
 
 [travis-img]: https://travis-ci.org/kyungminlee/PiTensor.svg?branch=master
 [travis-url]: https://travis-ci.org/kyungminlee/PiTensor
