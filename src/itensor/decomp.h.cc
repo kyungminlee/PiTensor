@@ -69,14 +69,14 @@ initDecomp(pybind11::module& module)
            py::arg("U"),
            py::arg("D"),
            py::arg("V"),
-           py::arg("args") = Global::args())
+           py::arg("args")=Global::args())
       .def("factor",
            (Spectrum (*)(Tensor const &, Tensor &, Tensor &, Args const &)) &safeFactor,
            "Factor Decomposition",
            py::arg("T"),
            py::arg("A"),
            py::arg("B"),
-           py::arg("args") = Args::global())
+           py::arg("args")=Args::global())
       .def("denmatDecomp",
            (Spectrum (*)(Tensor const &, Tensor &, Tensor &, Direction, Args const &)) &safeDenmatDecomp,
            "Density matrix decomposition",
@@ -84,7 +84,7 @@ initDecomp(pybind11::module& module)
            py::arg("A"),
            py::arg("B"),
            py::arg("dir"),
-           py::arg("args") = Args::global())
+           py::arg("args")=Args::global())
       // TODO: denmatDecomp with BigMatrixT
       .def("diagHermitian",
            (Spectrum (*)(Tensor const &, Tensor &, Tensor &, Args)) &safeDiagHermitian,
@@ -92,19 +92,19 @@ initDecomp(pybind11::module& module)
            py::arg("M"),
            py::arg("U"),
            py::arg("D"),
-           py::arg("args") = Args::global())
+           py::arg("args")=Args::global())
       .def("expHermitian",
            (Tensor (*)(Tensor const &, Cplx)) &expHermitian,
            "Hermitian Exponential",
            py::arg("T"),
-           py::arg("t") = 1.)
+           py::arg("t")=1.)
       .def("eigen",
            (void (*)(Tensor const &, Tensor &, Tensor & D, Args const &)) &eigen,
            "Eigenvalues and eigenvectors",
            py::arg("T"),
            py::arg("V"),
            py::arg("D"),
-           py::arg("args") = Args::global())
+           py::arg("args")=Args::global())
 
       ;
 }

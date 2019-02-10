@@ -5,3 +5,5 @@ cmake-build-*/
 repo
 build/
 lab/
+dist/
+*.egg-info/*

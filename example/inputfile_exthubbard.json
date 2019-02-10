@@ -1,0 +1,16 @@
+{
+  "N": 100,
+  "Npart": 10,
+  "t1": 1.0,
+  "t2": 0.2,
+  "U" : 1.0,
+  "V1": 0.5,
+  "sweeps": [
+    {"maxm": 50,  "minm": 10, "cutoff": 1E-12, "niter": 2, "noise": 1E-7},
+    {"maxm": 100, "minm": 20, "cutoff": 1E-12, "niter": 2, "noise": 1E-8},
+    {"maxm": 200, "minm": 20, "cutoff": 1E-12, "niter": 2, "noise": 1E-10},
+    {"maxm": 400, "minm": 20, "cutoff": 1E-12, "niter": 2, "noise": 0},
+    {"maxm": 800, "minm": 20, "cutoff": 1E-12, "niter": 2, "noise": 0}
+  ],
+  "quiet": true
+}

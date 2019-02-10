@@ -18,6 +18,10 @@ initBasicSiteSet(pybind11::module & module, const char* typeName)
            py::arg("N"),
            py::arg("args")=Args::global());
   type.def(py::init<std::vector<IQIndex> const &>());
+  type
+      .def("__repr__", [](Type const & obj) { std::stringstream ss; ss << std::scientific << obj; return ss.str(); })
+  ;
+
   // TODO read write
   return type;
 }
