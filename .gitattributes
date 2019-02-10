@@ -1,0 +1,7 @@
+* text=lf
+
+*.h text
+*.hpp text
+*.c text
+*.cc text
+*.cpp text
